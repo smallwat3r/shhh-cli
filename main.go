@@ -54,13 +54,13 @@ func main() {
 	decryptPassphrase := readCmd.String("p", "", "Passphrase to decrypt secret.")
 
 	if len(os.Args) == 1 {
-		fmt.Println("usage: shhh <command> [<args>]")
+		fmt.Println("usage: shhh-cli <command> [<args>]")
 		fmt.Println("Commands available:")
 		fmt.Println("  create    Creates a secret message.")
 		fmt.Println("  read      Read a secret message")
 		fmt.Println("Examples: ")
-		fmt.Println("  shhh create -m 'this is a secret msg.' -p SuperPassphrase123 -d 2")
-		fmt.Println("  shhh read -l https://shhh-encrypt.com/api/r/jKD8Uy0A9_51c8asqAYL -p SuperPassphrase123")
+		fmt.Println("  shhh-cli create -m 'this is a secret msg.' -p SuperPassphrase123 -d 2")
+		fmt.Println("  shhh-cli read -l https://shhh-encrypt.com/api/r/jKD8Uy0A9_51c8asqAYL -p SuperPassphrase123")
 		return
 	}
 
