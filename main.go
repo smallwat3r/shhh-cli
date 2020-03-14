@@ -47,7 +47,7 @@ func main() {
 	createCmd := flag.NewFlagSet("create", flag.ExitOnError)
 	secret := createCmd.String("m", "", "Secret message to encrypt.")
 	encryptPassphrase := createCmd.String("p", "", "Passphrase to encrypt secret.")
-	days := createCmd.Int("d", 3, "Optional, number of days to keep the secret alive (defaults to 3 days).") // optional
+	days := createCmd.Int("d", 3, "Optional, number of days to keep the secret alive.") // optional
 
 	readCmd := flag.NewFlagSet("read", flag.ExitOnError)
 	link := readCmd.String("l", "", "URL link to access secret.")
