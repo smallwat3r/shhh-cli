@@ -1,14 +1,17 @@
 # Shhh-cli  
 
-shhh-cli is a Command Line Interface tool to interact with [Shhh](https://github.com/smallwat3r) web-application API.  
+`shhh-cli` is a Command Line Interface tool to interact with [Shhh](https://github.com/smallwat3r) web-application API.  
 This tool allows you to create and read secrets directly from the command line / terminal.  
 
 ## Use with your own Shhh server  
 
-shhh-cli interacts by default with the official Shhh web-application (shhh-encrypt.com).  
-If you're hosting your own Shhh server, you can set-up an environment variable `SHHH_SERVER`.
+`shhh-cli` interacts by default with the official Shhh web-application (shhh-encrypt.com).  
+If you're hosting your own Shhh server, you can set-up an environment variable `SHHH_SERVER`.  
 This server will then be used as the default one by shhh-cli.  
-Example: `export SHHH_SERVER=https://mycustomserver.com`  
+```sh
+# Example (in you bashrc or zshrc)
+export SHHH_SERVER=https://mycustomserver.com
+```
 
 ## Usage  
 
