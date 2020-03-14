@@ -5,8 +5,9 @@ This tool allows you to create and read secrets directly from the command line /
 
 ## Use with your own Shhh server  
 
-`shhh-cli` interacts by default with the official Shhh web-application (shhh-encrypt.com).  
-If you're using Shhh on your own server, you can set-up an environment variable `SHHH_SERVER` to be used by default by `shhh-cli`.  
+shhh-cli interacts by default with the official Shhh server (shhh-encrypt.com).  
+If you host Shhh on your own server, you can set-up an env variable `SHHH_SERVER`.  
+It will know interact with your server as default.  
 ```sh
 # Example (in you bashrc or zshrc)
 export SHHH_SERVER=https://mycustomserver.com
