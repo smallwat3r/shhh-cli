@@ -21,7 +21,7 @@ platform [here](https://github.com/smallwat3r/shhh-cli/releases).
 ```sh
 # Extract the binary
 tar -xzf shhh-cli-darwin-amd64-0.1.0.tar
-# Move the script to bin/
+# Move the script to /usr/local/bin
 sudo mv shhh /usr/local/bin/
 ```
 
