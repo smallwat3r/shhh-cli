@@ -12,18 +12,13 @@ Example: `export SHHH_SERVER=https://mycustomserver.com`
 
 ## Usage  
 
-```sh
-usage: shhh <command> [<args>]
+```
+Usage: shhh-cli <command> [<args>]
+
 Commands available:
   create    Creates a secret message.
   read      Read a secret message
-Examples:
-  shhh create -m 'this is a secret msg.' -p SuperPassphrase123 -d 2
-  shhh read -l https://shhh-encrypt.com/api/r/jKD8Uy0A9_51c8asqAYL -p SuperPassphrase123
-```
 
-### create  
-```sh
 Usage of create:
   -d int
         Optional, number of days to keep the secret alive (defaults to 3 days).
@@ -31,13 +26,14 @@ Usage of create:
         Secret message to encrypt.
   -p string
         Passphrase to encrypt secret.
-```
 
-### read  
-```sh
 Usage of read:
   -l string
-        URL link to access secret.
+        Optional, number of days to keep the secret alive (defaults to 3 days).
   -p string
         Passphrase to decrypt secret.
+
+Examples:
+    shhh-cli create -m 'this is a secret msg.' -p SuperPassphrase123 -d 2
+    shhh-cli read -l https://shhh-encrypt.com/api/r/jKD8Uy0A9_51c8asqAYL -p SuperPassphrase123
 ```
