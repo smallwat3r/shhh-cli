@@ -13,10 +13,22 @@ It will know interact with your server as default.
 export SHHH_SERVER=https://mycustomserver.com
 ```
 
+## Install  
+
+shhh-cli has no runtime dependencies. Download a binary for your 
+platform [here](https://github.com/smallwat3r/shhh-cli/releases).
+
+```sh
+# Extract the binary
+tar -xzf shhh-cli-darwin-amd64-0.1.0.tar
+# Move the script to bin/
+sudo mv shhh /usr/local/bin/
+```
+
 ## Usage  
 
 ```
-Usage: shhh-cli <command> [<args>]
+Usage: shhh <command> [<args>]
 
 Commands available:
   create    Creates a secret message.
@@ -37,6 +49,6 @@ Usage of read:
         Passphrase to decrypt secret.
 
 Examples:
-    shhh-cli create -m "this is a secret msg." -p SuperPassphrase123 -d 2
-    shhh-cli read -l https://shhh-encrypt.com/api/r/jKD8Uy0A9_51c8asqAYL -p SuperPassphrase123
+    shhh create -m "this is a secret msg." -p SuperPassphrase123 -d 2
+    shhh read -l https://shhh-encrypt.com/api/r/jKD8Uy0A9_51c8asqAYL -p SuperPassphrase123
 ```

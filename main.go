@@ -204,7 +204,7 @@ func readSecret(link string, passphrase string) {
 }
 
 func usage() {
-	fmt.Println("Usage: shhh-cli <command> [<args>]")
+	fmt.Println("Usage: shhh <command> [<args>]")
 	fmt.Println("\nCommands available:")
 	fmt.Println("  create    Creates a secret message.")
 	fmt.Println("  read      Read a secret message.")
@@ -221,6 +221,6 @@ func usage() {
 	fmt.Println("  -p string")
 	fmt.Println("        " + helpDecryptPassphrase)
 	fmt.Println("\nExamples: ")
-	fmt.Println("    shhh-cli create -m \"this is a secret msg.\" -p SuperPassphrase123 -d 2")
-	fmt.Println("    shhh-cli read -l https://shhh-encrypt.com/api/r/jKD8Uy0A9_51c8asqAYL -p SuperPassphrase123")
+	fmt.Println("    shhh create -m \"this is a secret msg.\" -p SuperPassphrase123 -d 2")
+	fmt.Println("    shhh read -l https://shhh-encrypt.com/api/r/jKD8Uy0A9_51c8asqAYL -p SuperPassphrase123")
 }
