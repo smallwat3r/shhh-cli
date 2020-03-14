@@ -43,15 +43,23 @@ import (
 	"path"
 )
 
+const (
+	helpSecret            = "Secret message to encrypt."
+	helpEncryptPassphrase = "Passphrase to encrypt secret."
+	helpDays              = "Optional, number of days to keep the secret alive."
+	helpLink              = "URL link to access secret."
+	helpDecryptPassphrase = "Passphrase to decrypt secret."
+)
+
 func main() {
 	createCmd := flag.NewFlagSet("create", flag.ExitOnError)
-	secret := createCmd.String("m", "", "Secret message to encrypt.")
-	encryptPassphrase := createCmd.String("p", "", "Passphrase to encrypt secret.")
-	days := createCmd.Int("d", 3, "Optional, number of days to keep the secret alive.") // optional
+	secret := createCmd.String("m", "", helpSecret)
+	encryptPassphrase := createCmd.String("p", "", helpEncryptPassphrase)
+	days := createCmd.Int("d", 3, helpDays)
 
 	readCmd := flag.NewFlagSet("read", flag.ExitOnError)
-	link := readCmd.String("l", "", "URL link to access secret.")
-	decryptPassphrase := readCmd.String("p", "", "Passphrase to decrypt secret.")
+	link := readCmd.String("l", "", helpLink)
+	decryptPassphrase := readCmd.String("p", "", helpDecryptPassphrase)
 
 	if len(os.Args) == 1 {
 		usage()
@@ -70,11 +78,13 @@ func main() {
 
 	if createCmd.Parsed() {
 		if *secret == "" {
-			fmt.Println("Please supply a secret message using -m option. See `create -h` for help.")
+			fmt.Println("Please supply a secret message using -m option.")
+			fmt.Println(helpSecret)
 			return
 		}
 		if *encryptPassphrase == "" {
-			fmt.Println("Please supply the passphrase using -p option. See `create -h` for help.")
+			fmt.Println("Please supply the passphrase using -p option.")
+			fmt.Println(helpEncryptPassphrase)
 			return
 		}
 		createSecret(*secret, *encryptPassphrase, *days)
@@ -82,11 +92,13 @@ func main() {
 
 	if readCmd.Parsed() {
 		if *link == "" {
-			fmt.Println("Please supply the link using -l option. See `read -h` for help.")
+			fmt.Println("Please supply the link using -l option.")
+			fmt.Println(helpLink)
 			return
 		}
 		if *decryptPassphrase == "" {
-			fmt.Println("Please supply the passphrase using -p option. See `read -h` for help.")
+			fmt.Println("Please supply the passphrase using -p option.")
+			fmt.Println(helpDecryptPassphrase)
 			return
 		}
 		readSecret(*link, *decryptPassphrase)
@@ -197,17 +209,17 @@ func usage() {
 	fmt.Println("  create    Creates a secret message.")
 	fmt.Println("  read      Read a secret message")
 	fmt.Println("\nUsage of create:")
-	fmt.Println("  -d int")
-	fmt.Println("        Optional, number of days to keep the secret alive (defaults to 3 days).")
 	fmt.Println("  -m string")
-	fmt.Println("        Secret message to encrypt.")
+	fmt.Println("        " + helpSecret)
 	fmt.Println("  -p string")
-	fmt.Println("        Passphrase to encrypt secret.")
+	fmt.Println("        " + helpEncryptPassphrase)
+	fmt.Println("  -d int")
+	fmt.Println("        " + helpDays + "(default 3)")
 	fmt.Println("\nUsage of read:")
 	fmt.Println("  -l string")
-	fmt.Println("        Optional, number of days to keep the secret alive (defaults to 3 days).")
+	fmt.Println("        " + helpLink)
 	fmt.Println("  -p string")
-	fmt.Println("        Passphrase to decrypt secret.")
+	fmt.Println("        " + helpDecryptPassphrase)
 	fmt.Println("\nExamples: ")
 	fmt.Println("    shhh-cli create -m 'this is a secret msg.' -p SuperPassphrase123 -d 2")
 	fmt.Println("    shhh-cli read -l https://shhh-encrypt.com/api/r/jKD8Uy0A9_51c8asqAYL -p SuperPassphrase123")

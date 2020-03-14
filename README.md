@@ -23,16 +23,16 @@ Commands available:
   read      Read a secret message
 
 Usage of create:
-  -d int
-        Optional, number of days to keep the secret alive (defaults to 3 days).
   -m string
         Secret message to encrypt.
   -p string
         Passphrase to encrypt secret.
+  -d int
+        Optional, number of days to keep the secret alive.(default 3)
 
 Usage of read:
   -l string
-        Optional, number of days to keep the secret alive (defaults to 3 days).
+        URL link to access secret.
   -p string
         Passphrase to decrypt secret.
 
