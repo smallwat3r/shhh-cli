@@ -20,7 +20,7 @@ Usage: shhh-cli <command> [<args>]
 
 Commands available:
   create    Creates a secret message.
-  read      Read a secret message
+  read      Read a secret message.
 
 Usage of create:
   -m string
@@ -28,7 +28,7 @@ Usage of create:
   -p string
         Passphrase to encrypt secret.
   -d int
-        Optional, number of days to keep the secret alive.(default 3)
+        Optional, number of days to keep the secret alive. (default 3)
 
 Usage of read:
   -l string
@@ -37,6 +37,6 @@ Usage of read:
         Passphrase to decrypt secret.
 
 Examples:
-    shhh-cli create -m 'this is a secret msg.' -p SuperPassphrase123 -d 2
+    shhh-cli create -m "this is a secret msg." -p SuperPassphrase123 -d 2
     shhh-cli read -l https://shhh-encrypt.com/api/r/jKD8Uy0A9_51c8asqAYL -p SuperPassphrase123
 ```
