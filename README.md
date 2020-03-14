@@ -15,13 +15,19 @@ export SHHH_SERVER=https://mycustomserver.com
 
 ## Install  
 
+If you are a Go user:
+```sh
+go get -u github.com/smallwat3r/shhh-cli && \
+    mv $GOPATH/bin/shhh-cli $GOPATH/bin/shhh
+```
+
+Other:  
 shhh-cli has no runtime dependencies. Download a binary for your 
 platform [here](https://github.com/smallwat3r/shhh-cli/releases).
 
 ```sh
-# Extract the binary
-tar -xzf shhh-cli-darwin-amd64-0.1.0.tar
-# Move the script to /usr/local/bin
+# Unzip and move to bin
+unzip shhh-cli-darwin-amd64-0.1.0.zip
 sudo mv shhh /usr/local/bin/
 ```
 
