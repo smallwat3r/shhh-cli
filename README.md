@@ -3,7 +3,7 @@
 **shhh-cli** is a Command Line Interface tool to interact with [Shhh](https://github.com/smallwat3r) web-application API.  
 This tool allows you to create and read secrets directly from the command line / terminal.  
 
-![shhh-cli](https://i.imgur.com/HntOMrf.gif)  
+![shhh-cli](https://i.imgur.com/eoB1mbW.gif)  
 
 ## Tell shhh-cli to talk to your own Shhh server  
 
