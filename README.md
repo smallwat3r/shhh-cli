@@ -1,11 +1,13 @@
 # Shhh-cli  
 
+## What is it?  
+
 **shhh-cli** is a Command Line Interface tool to interact with [Shhh](https://github.com/smallwat3r) web-application API.  
 This tool allows you to create and read secrets directly from the command line / terminal.  
 
 ![shhh-cli](https://i.imgur.com/l7rKsxp.gif)  
 
-## Tell shhh-cli to talk to your own Shhh server  
+## How to tell shhh-cli to talk to your own Shhh server?  
 
 shhh-cli interacts by default with the official Shhh server (shhh-encrypt.com).  
 If you host Shhh on your own server, you can set-up an env variable `SHHH_SERVER`.  
@@ -15,7 +17,7 @@ It will know interact with your server as default.
 export SHHH_SERVER=https://my_own_shhh_app_server.com
 ```
 
-## Install  
+## How to install it?  
 
 If you are a Go user:
 ```sh
@@ -32,7 +34,7 @@ unzip shhh-cli-darwin-amd64-0.1.0.zip
 sudo mv shhh /usr/local/bin/
 ```
 
-## Usage  
+## How to use it?  
 
 ```
 Usage: shhh <command> [<args>]
