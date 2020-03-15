@@ -21,8 +21,8 @@ export SHHH_SERVER=https://my_own_shhh_app_server.com
 
 If you are a Go user:
 ```sh
-go get -u github.com/smallwat3r/shhh-cli && \
-    mv $GOPATH/bin/shhh-cli $GOPATH/bin/shhh
+go get -u github.com/smallwat3r/shhh-cli \
+    && mv $GOPATH/bin/shhh-cli $GOPATH/bin/shhh
 ```
 
 Other: shhh-cli has no runtime dependencies. Download a binary for your 
@@ -30,8 +30,8 @@ platform [here](https://github.com/smallwat3r/shhh-cli/releases).
 
 ```sh
 # Unzip and move to bin
-unzip shhh-cli-darwin-amd64-0.1.0.zip
-sudo mv shhh /usr/local/bin/
+unzip shhh_darwin_amd64.zip \
+    && sudo mv shhh /usr/local/bin/
 ```
 
 ## How to use it?  
