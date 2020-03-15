@@ -12,7 +12,7 @@ If you host Shhh on your own server, you can set-up an env variable `SHHH_SERVER
 It will know interact with your server as default.  
 ```sh
 # Example (in you bashrc or zshrc)
-export SHHH_SERVER=https://mycustomserver.com
+export SHHH_SERVER=https://my_own_shhh_app_server.com
 ```
 
 ## Install  
