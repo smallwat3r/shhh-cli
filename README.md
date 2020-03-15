@@ -33,27 +33,30 @@ sudo mv shhh /usr/local/bin/
 ## Usage  
 
 ```
-Usage: shhh <command> [<args>]
+Create or read secrets from a Shhh server.
 
-Commands available:
-  create    Creates a secret message.
-  read      Read a secret message.
+Usage:
+  shhh <command> [<args>]
+
+Options:
+  -h         Show help message.
+
+Modes:
+  create     Creates a secret message.
+  read       Read a secret message.
 
 Usage of create:
-  -m string
-        Secret message to encrypt.
-  -p string
-        Passphrase to encrypt secret.
-  -d int
-        Optional, number of days to keep the secret alive. (default 3)
+  -h         Show help message.
+  -m string  Secret message to encrypt.
+  -p string  Passphrase to encrypt secret.
+  -d int     Optional, number of days to keep the secret alive. (default 3).
 
 Usage of read:
-  -l string
-        URL link to access secret.
-  -p string
-        Passphrase to decrypt secret.
+  -h         Show help message.
+  -l string  URL link to access secret.
+  -p string  Passphrase to decrypt secret.
 
 Examples:
-    shhh create -m "this is a secret msg." -p SuperPassphrase123 -d 2
-    shhh read -l https://shhh-encrypt.com/api/r/jKD8Uy0A9_51c8asqAYL -p SuperPassphrase123
+  shhh create -m "this is a secret msg." -p SuperPassphrase123 -d 2
+  shhh read -l https://shhh-encrypt.com/api/r/jKD8Uy0A9_51c8asqAYL -p SuperPassphrase123
 ```

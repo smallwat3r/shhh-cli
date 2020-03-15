@@ -67,6 +67,9 @@ func main() {
 	}
 
 	switch os.Args[1] {
+	case "-h":
+		usage()
+		return
 	case "create":
 		createCmd.Parse(os.Args[2:])
 	case "read":
@@ -78,13 +81,11 @@ func main() {
 
 	if createCmd.Parsed() {
 		if *secret == "" {
-			fmt.Println("Please supply a secret message using -m option.")
-			fmt.Println(helpSecret)
+			fmt.Println("Please supply a secret message using -m option.\n-m:  " + helpSecret)
 			return
 		}
 		if *encryptPassphrase == "" {
-			fmt.Println("Please supply the passphrase using -p option.")
-			fmt.Println(helpEncryptPassphrase)
+			fmt.Println("Please supply the passphrase using -p option.\n-p  " + helpEncryptPassphrase)
 			return
 		}
 		createSecret(*secret, *encryptPassphrase, *days)
@@ -92,13 +93,11 @@ func main() {
 
 	if readCmd.Parsed() {
 		if *link == "" {
-			fmt.Println("Please supply the link using -l option.")
-			fmt.Println(helpLink)
+			fmt.Println("Please supply the link using -l option.\n-l  " + helpLink)
 			return
 		}
 		if *decryptPassphrase == "" {
-			fmt.Println("Please supply the passphrase using -p option.")
-			fmt.Println(helpDecryptPassphrase)
+			fmt.Println("Please supply the passphrase using -p option.\n-p  " + helpDecryptPassphrase)
 			return
 		}
 		readSecret(*link, *decryptPassphrase)
@@ -143,9 +142,11 @@ func createSecret(secret string, passphrase string, days int) {
 	}
 
 	if result["status"] == "created" {
+		fmt.Println("****************************************************************************")
 		fmt.Println("Secret link         :", result["link"])
 		fmt.Println("One time passphrase :", passphrase)
 		fmt.Println("Expires on          :", result["expires_on"])
+		fmt.Println("****************************************************************************")
 		return
 	}
 }
@@ -198,29 +199,33 @@ func readSecret(link string, passphrase string) {
 	}
 
 	if result["status"] == "success" {
+		fmt.Println("****************************************************************************")
 		fmt.Println(result["msg"])
+		fmt.Println("****************************************************************************")
 		return
 	}
 }
 
 func usage() {
-	fmt.Println("Usage: shhh <command> [<args>]")
-	fmt.Println("\nCommands available:")
-	fmt.Println("  create    Creates a secret message.")
-	fmt.Println("  read      Read a secret message.")
-	fmt.Println("\nUsage of create:")
-	fmt.Println("  -m string")
-	fmt.Println("        " + helpSecret)
-	fmt.Println("  -p string")
-	fmt.Println("        " + helpEncryptPassphrase)
-	fmt.Println("  -d int")
-	fmt.Println("        " + helpDays + " (default 3)")
-	fmt.Println("\nUsage of read:")
-	fmt.Println("  -l string")
-	fmt.Println("        " + helpLink)
-	fmt.Println("  -p string")
-	fmt.Println("        " + helpDecryptPassphrase)
-	fmt.Println("\nExamples: ")
-	fmt.Println("    shhh create -m \"this is a secret msg.\" -p SuperPassphrase123 -d 2")
-	fmt.Println("    shhh read -l https://shhh-encrypt.com/api/r/jKD8Uy0A9_51c8asqAYL -p SuperPassphrase123")
+	h := "Create or read secrets from a Shhh server.\n\n"
+	h += "Usage:\n"
+	h += "  shhh <command> [<args>]\n\n"
+	h += "Options:\n"
+	h += "  -h         Show help message.\n\n"
+	h += "Modes:\n"
+	h += "  create     Creates a secret message.\n"
+	h += "  read       Read a secret message.\n\n"
+	h += "Usage of create:\n"
+	h += "  -h         Show help message.\n"
+	h += "  -m string  " + helpSecret + "\n"
+	h += "  -p string  " + helpEncryptPassphrase + "\n"
+	h += "  -d int     " + helpDays + " (default 3).\n\n"
+	h += "Usage of read:\n"
+	h += "  -h         Show help message.\n"
+	h += "  -l string  " + helpLink + "\n"
+	h += "  -p string  " + helpDecryptPassphrase + "\n\n"
+	h += "Examples:\n"
+	h += "  shhh create -m \"this is a secret msg.\" -p SuperPassphrase123 -d 2\n"
+	h += "  shhh read -l https://shhh-encrypt.com/api/r/jKD8Uy0A9_51c8asqAYL -p SuperPassphrase123\n"
+	fmt.Println(h)
 }
