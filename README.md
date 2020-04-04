@@ -36,7 +36,8 @@ unzip shhh_darwin_amd64.zip \
 
 ## How to use it?  
 
-```
+```console
+$ shhh -h
 Create or read secrets from a Shhh server.
 
 Usage:
