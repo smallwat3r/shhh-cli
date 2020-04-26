@@ -1,33 +1,31 @@
-/*
-  Shhh CLI client
-
-  Shhh application repository:   https://github.com/smallwat3r/shhh
-  Shhh CLI repository:           https://github.com/smallwat3r/shhh-cli
-
-  Author: Matthieu Petiteau <mpetiteau.pro@gmail.com>
-
-  MIT License
-
-  Copyright (c) 2020 Matthieu Petiteau
-
-  Permission is hereby granted, free of charge, to any person obtaining a copy
-  of this software and associated documentation files (the "Software"), to deal
-  in the Software without restriction, including without limitation the rights
-  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-  copies of the Software, and to permit persons to whom the Software is
-  furnished to do so, subject to the following conditions:
-
-  The above copyright notice and this permission notice shall be included in all
-  copies or substantial portions of the Software.
-
-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-  SOFTWARE.
-*/
+//  Shhh CLI client
+//
+//  Shhh application repository:   https://github.com/smallwat3r/shhh
+//  Shhh CLI repository:           https://github.com/smallwat3r/shhh-cli
+//
+//  Author: Matthieu Petiteau <mpetiteau.pro@gmail.com>
+//
+//  MIT License
+//
+//  Copyright (c) 2020 Matthieu Petiteau
+//
+//  Permission is hereby granted, free of charge, to any person obtaining a copy
+//  of this software and associated documentation files (the "Software"), to deal
+//  in the Software without restriction, including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
+//
+//  The above copyright notice and this permission notice shall be included in all
+//  copies or substantial portions of the Software.
+//
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+//  SOFTWARE.
 
 package main
 
@@ -41,6 +39,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"reflect"
 )
 
 const (
@@ -75,17 +74,27 @@ func main() {
 	case "read":
 		readCmd.Parse(os.Args[2:])
 	default:
-		fmt.Printf("%q is not valid command.\n", os.Args[1])
+		fmt.Fprintf(os.Stderr, "%q is not valid command.\n", os.Args[1])
 		os.Exit(2)
 	}
 
 	if createCmd.Parsed() {
 		if *secret == "" {
-			fmt.Println("Please supply a secret message using -m option.\n-m:  " + helpSecret)
+			fmt.Fprintf(
+				os.Stderr,
+				"Please supply a secret message using -m option.\n-m  %s\n",
+				helpSecret,
+			)
 			return
 		}
 		if *encryptPassphrase == "" {
-			fmt.Println("Please supply the passphrase using -p option.\n-p  " + helpEncryptPassphrase)
+			fmt.Fprintf(
+				os.Stderr,
+				"Please supply the passphrase using -p option.\n-p  %s\n",
+				helpEncryptPassphrase,
+			)
+
+			// fmt.Fprintf(os.Stderr, "number of foo: %d", nFoo)
 			return
 		}
 		createSecret(*secret, *encryptPassphrase, *days)
@@ -93,11 +102,19 @@ func main() {
 
 	if readCmd.Parsed() {
 		if *link == "" {
-			fmt.Println("Please supply the link using -l option.\n-l  " + helpLink)
+			fmt.Fprintf(
+				os.Stderr,
+				"Please supply the link using -l option.\n-l  %s\n",
+				helpLink,
+			)
 			return
 		}
 		if *decryptPassphrase == "" {
-			fmt.Println("Please supply the passphrase using -p option.\n-p  " + helpDecryptPassphrase)
+			fmt.Fprintf(
+				os.Stderr,
+				"Please supply the passphrase using -p option.\n-p  %s\n",
+				helpDecryptPassphrase,
+			)
 			return
 		}
 		readSecret(*link, *decryptPassphrase)
@@ -107,9 +124,9 @@ func main() {
 func createSecret(secret string, passphrase string, days int) {
 
 	// Check env var for custom shhh server.
+	// If no custom server of shhh, defaults to standard.
 	domain := os.Getenv("SHHH_SERVER")
 	if domain == "" {
-		// If no custom server of shhh, defaults to standard.
 		domain = "https://shhh-encrypt.com/api/c"
 	} else {
 		domain += "/api/c"
@@ -137,10 +154,16 @@ func createSecret(secret string, passphrase string, days int) {
 	result := response["response"].(map[string]interface{})
 
 	if result["status"] == "error" {
-		fmt.Println("Error:", result["details"])
+		errors := result["details"].(map[string]interface{})["json"].(map[string]interface{})
+		for _, v := range errors {
+			switch reflect.TypeOf(v).Kind() {
+			case reflect.Slice:
+				s := reflect.ValueOf(v)
+				fmt.Println("Error:", s.Index(0))
+			}
+		}
 		return
 	}
-
 	if result["status"] == "created" {
 		fmt.Println("****************************************************************************")
 		fmt.Println("Secret link         :", result["link"])
@@ -180,7 +203,6 @@ func readSecret(link string, passphrase string) {
 	q.Add("passphrase", passphrase)
 
 	u.RawQuery = q.Encode()
-
 	read_url := u.String()
 
 	resp, err := http.Get(read_url)
@@ -197,13 +219,21 @@ func readSecret(link string, passphrase string) {
 		fmt.Println("Error:", result["msg"])
 		return
 	}
-
+	if result["status"] == "expired" {
+		fmt.Println("Error:", result["msg"])
+		return
+	}
+	if result["status"] == "invalid" {
+		fmt.Println("Error:", result["msg"])
+		return
+	}
 	if result["status"] == "success" {
 		fmt.Println("****************************************************************************")
 		fmt.Println(result["msg"])
 		fmt.Println("****************************************************************************")
 		return
 	}
+
 }
 
 func usage() {

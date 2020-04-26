@@ -2,18 +2,21 @@
 
 ## What is it?  
 
-**shhh-cli** is a Command Line Interface tool to interact with [Shhh](https://github.com/smallwat3r) web-application API.  
-This tool allows you to create and read secrets directly from the command line / terminal.  
+**shhh-cli** is a Command Line Interface tool to interact with 
+[Shhh](https://github.com/smallwat3r) web-application API.  
+This tool allows you to create and read secrets directly from the 
+command line / terminal.  
 
 ![shhh-cli](https://i.imgur.com/D2BF2MQ.gif)  
 
 ## How to tell shhh-cli to talk to your own Shhh server?  
 
-shhh-cli interacts by default with the official Shhh server (shhh-encrypt.com).  
-If you host Shhh on your own server, you can set-up an env variable `SHHH_SERVER`.  
-It will know interact with your server as default.  
+shhh-cli interacts by default with the official Shhh server 
+(shhh-encrypt.com). If you host Shhh on your own server, you can 
+set-up an env variable `SHHH_SERVER`. It will know interact with 
+your server as default.  
 ```sh
-# Example (in you bashrc or zshrc)
+# Example (in you bashrc)
 export SHHH_SERVER=https://my_own_shhh_app_server.com
 ```
 
@@ -25,18 +28,13 @@ go get -u github.com/smallwat3r/shhh-cli \
     && mv $GOPATH/bin/shhh-cli $GOPATH/bin/shhh
 ```
 
-Other: shhh-cli has no runtime dependencies. Download a binary for your 
-platform [here](https://github.com/smallwat3r/shhh-cli/releases).
-
-```sh
-# Unzip and move to bin
-unzip shhh_darwin_amd64.zip \
-    && sudo mv shhh /usr/local/bin/
-```
+Other: shhh-cli has no runtime dependencies. Download a binary for 
+your platform [here](https://github.com/smallwat3r/shhh-cli/releases).
 
 ## How to use it?  
 
-```
+```console
+$ shhh -h
 Create or read secrets from a Shhh server.
 
 Usage:
