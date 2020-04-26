@@ -7,7 +7,7 @@
 This tool allows you to create and read secrets directly from the 
 command line / terminal.  
 
-![shhh-cli](https://i.imgur.com/D2BF2MQ.gif)  
+![shhh-cli](https://i.imgur.com/rym9zbi.gif)  
 
 ## How to tell shhh-cli to generate secrets to your own Shhh server?  
 
