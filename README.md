@@ -18,7 +18,7 @@ your server as default.
 
 ```sh
 # Example (in you bashrc)
-export SHHH_SERVER=https://my_own_shhh_app_server.com
+export SHHH_SERVER=https://shhh-encrypt.herokuapp.com
 ```
 
 ## How to install it?  
