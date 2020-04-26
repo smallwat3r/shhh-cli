@@ -29,7 +29,8 @@ go get -u github.com/smallwat3r/shhh-cli \
     && mv $GOPATH/bin/shhh-cli $GOPATH/bin/shhh
 ```
 
-Other: shhh-cli has no runtime dependencies. Download a binary for 
+Or   
+shhh-cli has no runtime dependencies. Download a binary for 
 your platform [here](https://github.com/smallwat3r/shhh-cli/releases).
 
 ## How to use it?  
