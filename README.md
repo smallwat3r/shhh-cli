@@ -9,12 +9,13 @@ command line / terminal.
 
 ![shhh-cli](https://i.imgur.com/D2BF2MQ.gif)  
 
-## How to tell shhh-cli to talk to your own Shhh server?  
+## How to tell shhh-cli to generate secrets to your own Shhh server?  
 
 shhh-cli interacts by default with the official Shhh server 
 (shhh-encrypt.com). If you host Shhh on your own server, you can 
 set-up an env variable `SHHH_SERVER`. It will know interact with 
 your server as default.  
+
 ```sh
 # Example (in you bashrc)
 export SHHH_SERVER=https://my_own_shhh_app_server.com
