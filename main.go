@@ -125,7 +125,7 @@ func createSecret(secret string, passphrase string, days int) {
 	// If no custom server of shhh, defaults to standard.
 	domain := os.Getenv("SHHH_SERVER")
 	if domain == "" {
-		domain = "https://shhh-encrypt.com/api/c"
+		domain = "https://shhh-encrypt.herokuapp.com/api/c"
 	} else {
 		domain += "/api/c"
 	}
@@ -151,24 +151,23 @@ func createSecret(secret string, passphrase string, days int) {
 	json.NewDecoder(resp.Body).Decode(&response)
 	result := response["response"].(map[string]interface{})
 
-	if result["status"] == "error" {
-		errors := result["details"].(map[string]interface{})["json"].(map[string]interface{})
-		for _, v := range errors {
-			switch reflect.TypeOf(v).Kind() {
-			case reflect.Slice:
-				s := reflect.ValueOf(v)
-				fmt.Println("Error:", s.Index(0))
+	switch result["status"] {
+		case "error":
+			errors := result["details"].(map[string]interface{})["json"].(map[string]interface{})
+			for _, v := range errors {
+				switch reflect.TypeOf(v).Kind() {
+				case reflect.Slice:
+					s := reflect.ValueOf(v)
+					fmt.Println("Error:", s.Index(0))
+				}
 			}
-		}
-		return
-	}
-	if result["status"] == "created" {
-		fmt.Println("****************************************************************************")
-		fmt.Println("Secret link         :", result["link"])
-		fmt.Println("One time passphrase :", passphrase)
-		fmt.Println("Expires on          :", result["expires_on"])
-		fmt.Println("****************************************************************************")
-		return
+		case "created":
+			fmt.Println("****************************************************************************")
+			fmt.Println("Secret link         :", result["link"])
+			fmt.Println("One time passphrase :", passphrase)
+			fmt.Println("Expires on          :", result["expires_on"])
+			fmt.Println("****************************************************************************")
+		default: fmt.Println("An unexcepted error occured.")
 	}
 }
 
@@ -213,23 +212,14 @@ func readSecret(link string, passphrase string) {
 	json.NewDecoder(resp.Body).Decode(&response)
 	result := response["response"].(map[string]interface{})
 
-	if result["status"] == "error" {
-		fmt.Println("Error:", result["msg"])
-		return
-	}
-	if result["status"] == "expired" {
-		fmt.Println("Error:", result["msg"])
-		return
-	}
-	if result["status"] == "invalid" {
-		fmt.Println("Error:", result["msg"])
-		return
-	}
-	if result["status"] == "success" {
-		fmt.Println("****************************************************************************")
-		fmt.Println(result["msg"])
-		fmt.Println("****************************************************************************")
-		return
+	switch result["status"] {
+		case "error", "expired", "invalid":
+			fmt.Println("Error:", result["msg"])
+		case "success":
+			fmt.Println("****************************************************************************")
+			fmt.Println(result["msg"])
+			fmt.Println("****************************************************************************")
+		default: fmt.Println("An unexcepted error occured.")
 	}
 
 }
