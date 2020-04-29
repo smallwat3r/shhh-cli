@@ -7,7 +7,7 @@
 This tool allows you to create and read secrets directly from the 
 command line / terminal.  
 
-![shhh-cli](https://i.imgur.com/D2BF2MQ.gif)  
+![shhh-cli](https://i.imgur.com/rym9zbi.gif)  
 
 ## How to tell shhh-cli to generate secrets to your own Shhh server?  
 
@@ -18,7 +18,7 @@ your server as default.
 
 ```sh
 # Example (in you bashrc)
-export SHHH_SERVER=https://my_own_shhh_app_server.com
+export SHHH_SERVER=https://shhh-encrypt.herokuapp.com
 ```
 
 ## How to install it?  
@@ -29,7 +29,8 @@ go get -u github.com/smallwat3r/shhh-cli \
     && mv $GOPATH/bin/shhh-cli $GOPATH/bin/shhh
 ```
 
-Other: shhh-cli has no runtime dependencies. Download a binary for 
+Or   
+shhh-cli has no runtime dependencies. Download a binary for 
 your platform [here](https://github.com/smallwat3r/shhh-cli/releases).
 
 ## How to use it?  
