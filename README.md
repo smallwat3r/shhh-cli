@@ -9,7 +9,7 @@ command line / terminal.
 
 ![shhh-cli](https://i.imgur.com/zGF2015.gif)  
 
-## Use shhh-cli with your own instance of Shhh?  
+## How to use it with your own instance of Shhh?  
 
 shhh-cli interacts by default with the official Shhh server. If 
 you've set-up your own Shhh server, and want to create secrets from
