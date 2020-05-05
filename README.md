@@ -12,13 +12,13 @@ command line / terminal.
 ## How to tell shhh-cli to generate secrets to your own Shhh server?  
 
 shhh-cli interacts by default with the official Shhh server 
-(shhh-encrypt.com). If you host Shhh on your own server, you can 
-set-up an env variable `SHHH_SERVER`. It will know interact with 
-your server as default.  
+(shhh-encrypt.herokuapp.com). If you host Shhh on your own server, 
+you can set-up an env variable `SHHH_SERVER`. It will know interact 
+with your server as default.  
 
 ```sh
 # Example (in you bashrc)
-export SHHH_SERVER=https://shhh-encrypt.herokuapp.com
+export SHHH_SERVER=https://<my-custom-shhh-server>.com
 ```
 
 ## How to install it?  
@@ -61,6 +61,6 @@ Usage of read:
   -p string  Passphrase to decrypt secret.
 
 Examples:
-  shhh create -m "this is a secret msg." -p SuperPassphrase123 -d 2
-  shhh read -l https://shhh-encrypt.com/api/r/jKD8Uy0A9_51c8asqAYL -p SuperPassphrase123
+  shhh create -m 'this is a secret msg.' -p 'P!dhuie0e3bdiu' -d 2
+  shhh read -l https://<shhh-server>/api/r/jKD8Uy0A9_51c8asqAYL -p 'P!dhuie0e3bdiu'
 ```

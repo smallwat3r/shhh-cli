@@ -1,31 +1,33 @@
-// Shhh CLI client
-//
-// Shhh application repository:   https://github.com/smallwat3r/shhh
-// Shhh CLI repository:           https://github.com/smallwat3r/shhh-cli
-//
-// Author: Matthieu Petiteau <mpetiteau.pro@gmail.com>
-//
-// MIT License
-//
-// Copyright (c) 2020 Matthieu Petiteau
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
+/*
+Shhh CLI client
+
+Shhh application repository:   https://github.com/smallwat3r/shhh
+Shhh CLI repository:           https://github.com/smallwat3r/shhh-cli
+
+Author: Matthieu Petiteau <mpetiteau.pro@gmail.com>
+
+MIT License
+
+Copyright (c) 2020 Matthieu Petiteau
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 
 package main
 
@@ -40,8 +42,11 @@ import (
 	"os"
 	"path"
 	"reflect"
+
+	. "github.com/logrusorgru/aurora"
 )
 
+// Parameters helpers
 const (
 	helpSecret            = "Secret message to encrypt."
 	helpEncryptPassphrase = "Passphrase to encrypt secret."
@@ -49,6 +54,8 @@ const (
 	helpLink              = "URL link to access secret."
 	helpDecryptPassphrase = "Passphrase to decrypt secret."
 )
+
+const separator = "-------------------------------------------------------------------------------"
 
 func main() {
 	createCmd := flag.NewFlagSet("create", flag.ExitOnError)
@@ -120,9 +127,8 @@ func main() {
 }
 
 func createSecret(secret string, passphrase string, days int) {
-
-	// Check env var for custom shhh server.
-	// If no custom server of shhh, defaults to standard.
+	// Check env var for custom Shhh server.
+	// If no custom server specified, default to the default Shhh application server.
 	domain := os.Getenv("SHHH_SERVER")
 	if domain == "" {
 		domain = "https://shhh-encrypt.herokuapp.com/api/c"
@@ -152,22 +158,23 @@ func createSecret(secret string, passphrase string, days int) {
 	result := response["response"].(map[string]interface{})
 
 	switch result["status"] {
-		case "error":
-			errors := result["details"].(map[string]interface{})["json"].(map[string]interface{})
-			for _, v := range errors {
-				switch reflect.TypeOf(v).Kind() {
-				case reflect.Slice:
-					s := reflect.ValueOf(v)
-					fmt.Println("Error:", s.Index(0))
-				}
+	case "error":
+		errors := result["details"].(map[string]interface{})["json"].(map[string]interface{})
+		for _, v := range errors {
+			switch reflect.TypeOf(v).Kind() {
+			case reflect.Slice:
+				s := reflect.ValueOf(v)
+				fmt.Println(Red(s.Index(0)))
 			}
-		case "created":
-			fmt.Println("****************************************************************************")
-			fmt.Println("Secret link         :", result["link"])
-			fmt.Println("One time passphrase :", passphrase)
-			fmt.Println("Expires on          :", result["expires_on"])
-			fmt.Println("****************************************************************************")
-		default: fmt.Println("An unexcepted error occured.")
+		}
+	case "created":
+		fmt.Println(Green(separator))
+		fmt.Println(Green("Secret link         :"), Bold(Green(result["link"])))
+		fmt.Println(Green("One time passphrase :"), Bold(Green(passphrase)))
+		fmt.Println(Green("Expires on          :"), Bold(Green(result["expires_on"])))
+		fmt.Println(Green(separator))
+	default:
+		fmt.Println(Red("An unexcepted error occured."))
 	}
 }
 
@@ -213,37 +220,44 @@ func readSecret(link string, passphrase string) {
 	result := response["response"].(map[string]interface{})
 
 	switch result["status"] {
-		case "error", "expired", "invalid":
-			fmt.Println("Error:", result["msg"])
-		case "success":
-			fmt.Println("****************************************************************************")
-			fmt.Println(result["msg"])
-			fmt.Println("****************************************************************************")
-		default: fmt.Println("An unexcepted error occured.")
+	case "error", "expired", "invalid":
+		fmt.Println(Red(result["msg"]))
+	case "success":
+		fmt.Println(Green(separator))
+		fmt.Println(Bold(Green(result["msg"])))
+		fmt.Println(Green(separator))
+	default:
+		fmt.Println(Red("An unexcepted error occured."))
 	}
-
 }
 
 func usage() {
 	h := "Create or read secrets from a Shhh server.\n\n"
+
 	h += "Usage:\n"
 	h += "  shhh <command> [<args>]\n\n"
+
 	h += "Options:\n"
 	h += "  -h         Show help message.\n\n"
+
 	h += "Modes:\n"
 	h += "  create     Creates a secret message.\n"
 	h += "  read       Read a secret message.\n\n"
+
 	h += "Usage of create:\n"
 	h += "  -h         Show help message.\n"
 	h += "  -m string  " + helpSecret + "\n"
 	h += "  -p string  " + helpEncryptPassphrase + "\n"
 	h += "  -d int     " + helpDays + " (default 3).\n\n"
+
 	h += "Usage of read:\n"
 	h += "  -h         Show help message.\n"
 	h += "  -l string  " + helpLink + "\n"
 	h += "  -p string  " + helpDecryptPassphrase + "\n\n"
+
 	h += "Examples:\n"
-	h += "  shhh create -m \"this is a secret msg.\" -p SuperPassphrase123 -d 2\n"
-	h += "  shhh read -l https://shhh-encrypt.com/api/r/jKD8Uy0A9_51c8asqAYL -p SuperPassphrase123\n"
+	h += "  shhh create -m 'this is a secret msg.' -p 'P!dhuie0e3bdiu' -d 2\n"
+	h += "  shhh read -l https://<shhh-server>/api/r/jKD8Uy0A9_51c8asqAYL -p 'P!dhuie0e3bdiu'\n"
+
 	fmt.Println(h)
 }
