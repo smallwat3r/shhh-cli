@@ -1,5 +1,5 @@
 /*
-Shhh client
+CLI client for Shhh
 
 Shhh application repository:   https://github.com/smallwat3r/shhh
 Shhh CLI repository:           https://github.com/smallwat3r/shhh-cli
