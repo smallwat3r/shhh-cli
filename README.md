@@ -2,24 +2,26 @@
 
 ## What is it?  
 
-**shhh-cli** is a Command Line Interface tool to interact with 
-[Shhh](https://github.com/smallwat3r) web-application API.  
+**shhh-cli** is a Command Line Interface tool to interact with the 
+[Shhh](https://github.com/smallwat3r) API.  
 This tool allows you to create and read secrets directly from the 
 command line / terminal.  
 
 ![shhh-cli](https://i.imgur.com/zGF2015.gif)  
 
-## How to tell shhh-cli to generate secrets to your own Shhh server?  
+## Use shhh-cli with your own instance of Shhh?  
 
-shhh-cli interacts by default with the official Shhh server 
-(shhh-encrypt.herokuapp.com). If you host Shhh on your own server, 
-you can set-up an env variable `SHHH_SERVER`. It will know interact 
-with your server as default.  
+shhh-cli interacts by default with the official Shhh server. If 
+you've set-up your own Shhh server, and want to create secrets from
+this server by default, you can set-up an environment variable 
+`SHHH_SERVER`.
 
 ```sh
 # Example (in you bashrc)
 export SHHH_SERVER=https://<my-custom-shhh-server>.com
 ```
+
+Note: you will still be able to read secrets from other Shhh servers.
 
 ## How to install it?  
 
@@ -30,7 +32,7 @@ go get -u github.com/smallwat3r/shhh-cli \
 ```
 
 Or   
-shhh-cli has no runtime dependencies. Download a binary for 
+shhh-cli has no runtime dependencies, you can download a binary for 
 your platform [here](https://github.com/smallwat3r/shhh-cli/releases).
 
 ## How to use it?  
