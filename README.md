@@ -9,7 +9,19 @@ command line / terminal.
 
 ![shhh-cli](https://i.imgur.com/zGF2015.gif)  
 
-## How to use it with your own instance of Shhh?  
+## How to install it?  
+
+If you are a Go user:
+```sh
+go get -u github.com/smallwat3r/shhh-cli \
+    && mv $GOPATH/bin/shhh-cli $GOPATH/bin/shhh
+```
+
+Or   
+shhh-cli has no runtime dependencies, you can download a binary for 
+your platform [here](https://github.com/smallwat3r/shhh-cli/releases).
+
+## How to link it to your own instance of Shhh?  
 
 shhh-cli interacts by default with the official Shhh server. If 
 you've set-up your own Shhh server, and want to create secrets from
@@ -22,18 +34,6 @@ export SHHH_SERVER=https://<my-custom-shhh-server>.com
 ```
 
 Note: you will still be able to read secrets from other Shhh servers.
-
-## How to install it?  
-
-If you are a Go user:
-```sh
-go get -u github.com/smallwat3r/shhh-cli \
-    && mv $GOPATH/bin/shhh-cli $GOPATH/bin/shhh
-```
-
-Or   
-shhh-cli has no runtime dependencies, you can download a binary for 
-your platform [here](https://github.com/smallwat3r/shhh-cli/releases).
 
 ## How to use it?  
 
