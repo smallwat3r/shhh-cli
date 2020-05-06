@@ -3,8 +3,6 @@
 
 ---
 
-## What is it?  
-
 **shhh-cli** is a Command Line Interface tool interacting with the 
 [Shhh](https://github.com/smallwat3r) API.  
 This allows you to create and read secrets directly from the 
