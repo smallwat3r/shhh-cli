@@ -1,4 +1,7 @@
-# Shhh-cli  
+<h3 align="center">shhh-cli</h3>
+<p align="center">Go CLI client for Shhh</p>
+
+---
 
 ## What is it?  
 
