@@ -57,6 +57,7 @@ Usage of create:
   -m string  Secret message to encrypt.
   -p string  Passphrase to encrypt secret.
   -d int     Optional, number of days to keep the secret alive. (default 3).
+  -s string  Optional, Shhh target server (ex: https://shhh-encrypt.herokuapp.com).
 
 Usage of read:
   -h         Show help message.
@@ -64,6 +65,6 @@ Usage of read:
   -p string  Passphrase to decrypt secret.
 
 Examples:
-  shhh create -m 'this is a secret msg.' -p 'P!dhuie0e3bdiu' -d 2
-  shhh read -l https://<shhh-server>/api/r/jKD8Uy0A9_51c8asqAYL -p 'P!dhuie0e3bdiu'
+  shhh create -m 'this is a secret msg.' -p P!dhuie0e3bdiu -d 2
+  shhh read -l https://shhh-encrypt.herokuapp.com/api/r/jKD8Uy0A9_51c8asqAYL -p P!dhuie0e3bdiu
 ```

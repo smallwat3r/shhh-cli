@@ -1,2 +1,4 @@
 github.com/logrusorgru/aurora v0.0.0-20200102142835-e9ef32dff381 h1:bqDmpDG49ZRnB5PcgP0RXtQvnMSgIF14M7CBd2shtXs=
 github.com/logrusorgru/aurora v0.0.0-20200102142835-e9ef32dff381/go.mod h1:7rIyQOR62GCctdiQpZ/zOJlFyk6y+94wXzv6RNZgaR4=
+github.com/smallwat3r/shhh-cli v0.1.0 h1:7xwoxIl0jty9KV1B2weoGLKtc/hrrT8OFDDHz1a55Js=
+github.com/smallwat3r/shhh-cli v0.1.0/go.mod h1:88uuUIubOBEPONaSEX18UR7iznmWA8y0omab5s/OIbs=

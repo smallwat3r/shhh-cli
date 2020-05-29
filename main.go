@@ -1,33 +1,31 @@
-/*
-CLI client for Shhh
-
-Shhh application repository:   https://github.com/smallwat3r/shhh
-Shhh CLI repository:           https://github.com/smallwat3r/shhh-cli
-
-Author: Matthieu Petiteau <mpetiteau.pro@gmail.com>
-
-MIT License
-
-Copyright (c) 2020 Matthieu Petiteau
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
+// CLI client for Shhh
+//
+// Shhh app repo: https://github.com/smallwat3r/shhh
+// Shhh CLI repo: https://github.com/smallwat3r/shhh-cli
+//
+// Author: Matthieu Petiteau <mpetiteau.pro@gmail.com>
+//
+// MIT License
+//
+// Copyright (c) 2020 Matthieu Petiteau
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
 package main
 
@@ -46,11 +44,12 @@ import (
 	. "github.com/logrusorgru/aurora"
 )
 
-// Parameters helpers
+// Params
 const (
 	helpSecret            = "Secret message to encrypt."
 	helpEncryptPassphrase = "Passphrase to encrypt secret."
 	helpDays              = "Optional, number of days to keep the secret alive."
+	helpServer            = "Optional, Shhh target server (ex: https://shhh-encrypt.herokuapp.com)."
 	helpLink              = "URL link to access secret."
 	helpDecryptPassphrase = "Passphrase to decrypt secret."
 )
@@ -62,6 +61,7 @@ func main() {
 	secret := createCmd.String("m", "", helpSecret)
 	encryptPassphrase := createCmd.String("p", "", helpEncryptPassphrase)
 	days := createCmd.Int("d", 3, helpDays)
+	server := createCmd.String("s", "", helpServer)
 
 	readCmd := flag.NewFlagSet("read", flag.ExitOnError)
 	link := readCmd.String("l", "", helpLink)
@@ -82,7 +82,7 @@ func main() {
 		readCmd.Parse(os.Args[2:])
 	default:
 		fmt.Fprintf(os.Stderr, "%q is not valid command.\n", os.Args[1])
-		os.Exit(2)
+		os.Exit(127)
 	}
 
 	if createCmd.Parsed() {
@@ -102,7 +102,7 @@ func main() {
 			)
 			return
 		}
-		createSecret(*secret, *encryptPassphrase, *days)
+		createSecret(*secret, *encryptPassphrase, *days, *server)
 	}
 
 	if readCmd.Parsed() {
@@ -126,40 +126,76 @@ func main() {
 	}
 }
 
-func createSecret(secret string, passphrase string, days int) {
-	// Check env var for custom Shhh server.
-	// If no custom server specified, default to the default Shhh application server.
-	domain := os.Getenv("SHHH_SERVER")
-	if domain == "" {
-		domain = "https://shhh-encrypt.herokuapp.com/api/c"
-	} else {
-		domain += "/api/c"
-	}
+func isUrl(str string) bool {
+	u, err := url.Parse(str)
+	return err == nil && u.Scheme != "" && u.Host != ""
+}
 
-	message := map[string]interface{}{
+func getTargetServer(server string) string {
+	target := os.Getenv("SHHH_SERVER") // if Shhh server set up in env
+	if !(server == "") {
+		target = server
+	}
+	// Default Shhh server target if none specified nor in env or params
+	if target == "" {
+		return "https://shhh-encrypt.herokuapp.com/api/c"
+	}
+	// Check url is valid and add API endpoint
+	if !isUrl(target) {
+		fmt.Fprintf(os.Stderr, "Shhh server target URL invalid: %s\n", target)
+		os.Exit(1)
+	}
+	return target + "/api/c"
+}
+
+func createSecret(secret string, passphrase string, days int, server string) {
+	target := getTargetServer(server) // Get target Shhh host
+
+	// Request
+	payload := map[string]interface{}{
 		"secret":     secret,
 		"passphrase": passphrase,
 		"days":       days,
 	}
-
-	bytesRepr, err := json.Marshal(message)
+	bytesRepr, err := json.Marshal(payload)
 	if err != nil {
 		log.Fatalln(err)
 	}
-
-	resp, err := http.Post(domain, "application/json", bytes.NewBuffer(bytesRepr))
+	resp, err := http.Post(target, "application/json", bytes.NewBuffer(bytesRepr))
 	if err != nil {
 		log.Fatalln(err)
 	}
+	if resp.StatusCode < 200 || resp.StatusCode >= 299 {
+		fmt.Fprintf(
+			os.Stderr,
+			"Failed to reach Shhh: returned %d on %s\n",
+			resp.StatusCode,
+			target,
+		)
+		os.Exit(1)
+	}
 
-	// Get response from server.
 	var response map[string]interface{}
 	json.NewDecoder(resp.Body).Decode(&response)
-	result := response["response"].(map[string]interface{})
+
+	result, ok := response["response"].(map[string]interface{})
+	if !ok {
+		fmt.Fprintf(os.Stderr, "Cannot parse response from server.\n")
+		os.Exit(1)
+	}
 
 	switch result["status"] {
 	case "error":
-		errors := result["details"].(map[string]interface{})["json"].(map[string]interface{})
+		details, ok := result["details"].(map[string]interface{})
+		if !ok {
+			fmt.Fprintf(os.Stderr, "Cannot parse response from server.\n")
+			os.Exit(1)
+		}
+		errors, ok := details["json"].(map[string]interface{})
+		if !ok {
+			fmt.Fprintf(os.Stderr, "Cannot parse response from server.\n")
+			os.Exit(1)
+		}
 		for _, v := range errors {
 			switch reflect.TypeOf(v).Kind() {
 			case reflect.Slice:
@@ -174,25 +210,30 @@ func createSecret(secret string, passphrase string, days int) {
 		fmt.Println(Green("Expires on          :"), Bold(Green(result["expires_on"])))
 		fmt.Println(Green(separator))
 	default:
-		fmt.Println(Red("An unexcepted error occured."))
+		fmt.Fprintf(os.Stderr, "Cannot parse response from server.\n")
+		os.Exit(1)
 	}
 }
 
 func readSecret(link string, passphrase string) {
+	// Check url is valid
+	if !isUrl(link) {
+		fmt.Fprintf(os.Stderr, "Shhh server link URL invalid: %s\n", link)
+		os.Exit(1)
+	}
+
+	// Build API endpoint from link
 	l, err := url.Parse(link)
 	if err != nil {
 		log.Fatalln(err)
 	}
 	host := l.Scheme + "://" + l.Host
 
-	// Get slug in URL path.
 	p := l.Path
-	slug := path.Base(p)
+	slug := path.Base(p) // Get unique slug from link URL
 
-	// Build API URL with args provided.
-	api_url := host + "/api/r"
-
-	u, err := url.Parse(api_url)
+	apiUrl := host + "/api/r"
+	u, err := url.Parse(apiUrl)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -201,23 +242,33 @@ func readSecret(link string, passphrase string) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
-	// Add args in querystring.
 	q.Add("slug", slug)
 	q.Add("passphrase", passphrase)
 
+	// Request
 	u.RawQuery = q.Encode()
-	read_url := u.String()
-
-	resp, err := http.Get(read_url)
+	readUrl := u.String()
+	resp, err := http.Get(readUrl)
 	if err != nil {
 		log.Fatalln(err)
 	}
+	if resp.StatusCode < 200 || resp.StatusCode >= 299 {
+		fmt.Fprintf(
+			os.Stderr,
+			"Failed to reach Shhh: returned %d on %s\n",
+			resp.StatusCode,
+			link,
+		)
+		os.Exit(1)
+	}
 
-	// Get response from server.
 	var response map[string]interface{}
 	json.NewDecoder(resp.Body).Decode(&response)
-	result := response["response"].(map[string]interface{})
+	result, ok := response["response"].(map[string]interface{})
+	if !ok {
+		fmt.Fprintf(os.Stderr, "Cannot parse response from server.\n")
+		os.Exit(1)
+	}
 
 	switch result["status"] {
 	case "error", "expired", "invalid":
@@ -227,7 +278,8 @@ func readSecret(link string, passphrase string) {
 		fmt.Println(Bold(Green(result["msg"])))
 		fmt.Println(Green(separator))
 	default:
-		fmt.Println(Red("An unexcepted error occured."))
+		fmt.Fprintf(os.Stderr, "Cannot parse response from server.\n")
+		os.Exit(1)
 	}
 }
 
@@ -248,7 +300,8 @@ func usage() {
 	h += "  -h         Show help message.\n"
 	h += "  -m string  " + helpSecret + "\n"
 	h += "  -p string  " + helpEncryptPassphrase + "\n"
-	h += "  -d int     " + helpDays + " (default 3).\n\n"
+	h += "  -d int     " + helpDays + " (default 3).\n"
+	h += "  -s string  " + helpServer + "\n\n"
 
 	h += "Usage of read:\n"
 	h += "  -h         Show help message.\n"
@@ -256,8 +309,8 @@ func usage() {
 	h += "  -p string  " + helpDecryptPassphrase + "\n\n"
 
 	h += "Examples:\n"
-	h += "  shhh create -m 'this is a secret msg.' -p 'P!dhuie0e3bdiu' -d 2\n"
-	h += "  shhh read -l https://<shhh-server>/api/r/jKD8Uy0A9_51c8asqAYL -p 'P!dhuie0e3bdiu'\n"
+	h += "  shhh create -m 'this is a secret msg.' -p P!dhuie0e3bdiu -d 2\n"
+	h += "  shhh read -l https://shhh-encrypt.herokuapp.com/api/r/jKD8Uy0A9_51c8asqAYL -p P!dhuie0e3bdiu\n"
 
 	fmt.Println(h)
 }
