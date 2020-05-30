@@ -45,7 +45,7 @@ Create or read secrets from a Shhh server.
 Find more information at https://github.com/smallwat3r/shhh-cli/blob/master/README.md
 
 Usage:
-  shhh [mode] [option]
+  shhh [mode] [options]
 
 Options:
   -h, --help   Show help message and exit.

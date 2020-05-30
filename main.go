@@ -118,7 +118,7 @@ func main() {
 		if secret == "" {
 			fmt.Fprintf(
 				os.Stderr,
-				"Please supply a secret message using -m option.\n-m  %s\n",
+				"Please supply a secret message using -m / --message option.\n-m  %s\n",
 				helpSecret,
 			)
 			return
@@ -126,7 +126,7 @@ func main() {
 		if encryptPassphrase == "" {
 			fmt.Fprintf(
 				os.Stderr,
-				"Please supply the passphrase using -p option.\n-p  %s\n",
+				"Please supply the passphrase using -p / --passphrase option.\n-p  %s\n",
 				helpEncryptPassphrase,
 			)
 			return
@@ -138,7 +138,7 @@ func main() {
 		if link == "" {
 			fmt.Fprintf(
 				os.Stderr,
-				"Please supply the link using -l option.\n-l  %s\n",
+				"Please supply the link using -l / --link option.\n-l  %s\n",
 				helpLink,
 			)
 			return
@@ -146,7 +146,7 @@ func main() {
 		if decryptPassphrase == "" {
 			fmt.Fprintf(
 				os.Stderr,
-				"Please supply the passphrase using -p option.\n-p  %s\n",
+				"Please supply the passphrase using -p / --passphrase option.\n-p  %s\n",
 				helpDecryptPassphrase,
 			)
 			return
@@ -338,7 +338,7 @@ func usage() {
 	h += "Find more information at https://github.com/smallwat3r/shhh-cli/blob/master/README.md\n\n"
 
 	h += "Usage:\n"
-	h += "  shhh [mode] [option]\n\n"
+	h += "  shhh [mode] [options]\n\n"
 
 	h += "Options:\n"
 	h += "  -h, --help   Show help message and exit.\n\n"
