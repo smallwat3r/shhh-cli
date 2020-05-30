@@ -19,13 +19,13 @@ go get -u github.com/smallwat3r/shhh-cli \
 ```
 
 Or, shhh-cli has no runtime dependencies, you can download a binary for 
-your platform [here](https://github.com/smallwat3r/shhh-cli/releases).
+your platform [here](https://github.com/smallwat3r/shhh-cli/releases), 
+then rename it `shhh` and place it in your `bin` directory.
 
-## Using your own instance of Shhh?  
+## Using a self-hosted Shhh instance?  
 
-shhh-cli interacts by default with the official Shhh server.  
-
-If you've set-up your own Shhh server, and want to create secrets 
+shhh-cli interacts by default with the official Shhh server. If 
+you've set-up your own Shhh server, and want to create secrets 
 from this server by default, you will need to set-up an `SHHH_SERVER`
 environment variable.
 
@@ -34,7 +34,9 @@ environment variable.
 export SHHH_SERVER=https://<my-custom-shhh-server>.com
 ```
 
-Note: you will still be able to read secrets from other Shhh servers.
+Note: this won't impact reading secrets from other Shhh servers, and
+you will still be able to create secrets in other servers using the 
+`--server` option.
 
 ## How to use it?  
 
