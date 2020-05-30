@@ -46,10 +46,13 @@ import (
 
 // Params
 const (
+	// create
 	helpSecret            = "Secret message to encrypt."
 	helpEncryptPassphrase = "Passphrase to encrypt secret."
-	helpDays              = "Optional, number of days to keep the secret alive."
-	helpServer            = "Optional, Shhh target server (ex: https://shhh-encrypt.herokuapp.com)."
+	helpDays              = "(optional) Number of days to keep the secret alive (default: 3)."
+	helpServer            = "(optional) Shhh target server (ex: https://shhh-encrypt.herokuapp.com)."
+
+	// read
 	helpLink              = "URL link to access secret."
 	helpDecryptPassphrase = "Passphrase to decrypt secret."
 )
@@ -58,14 +61,40 @@ const separator = "-------------------------------------------------------------
 
 func main() {
 	createCmd := flag.NewFlagSet("create", flag.ExitOnError)
-	secret := createCmd.String("m", "", helpSecret)
-	encryptPassphrase := createCmd.String("p", "", helpEncryptPassphrase)
-	days := createCmd.Int("d", 3, helpDays)
-	server := createCmd.String("s", "", helpServer)
+	createCmd.Usage = func() {
+		h := usageCreate()
+		fmt.Println(h)
+	}
+
+	var secret string
+	createCmd.StringVar(&secret, "m", "", helpSecret)
+	createCmd.StringVar(&secret, "message", "", helpSecret)
+
+	var encryptPassphrase string
+	createCmd.StringVar(&encryptPassphrase, "p", "", helpEncryptPassphrase)
+	createCmd.StringVar(&encryptPassphrase, "passphrase", "", helpEncryptPassphrase)
+
+	var days int
+	createCmd.IntVar(&days, "d", 3, helpDays)
+	createCmd.IntVar(&days, "days", 3, helpDays)
+
+	var server string
+	createCmd.StringVar(&server, "s", "", helpServer)
+	createCmd.StringVar(&server, "server", "", helpServer)
 
 	readCmd := flag.NewFlagSet("read", flag.ExitOnError)
-	link := readCmd.String("l", "", helpLink)
-	decryptPassphrase := readCmd.String("p", "", helpDecryptPassphrase)
+	readCmd.Usage = func() {
+		h := usageRead()
+		fmt.Println(h)
+	}
+
+	var link string
+	readCmd.StringVar(&link, "l", "", helpLink)
+	readCmd.StringVar(&link, "link", "", helpLink)
+
+	var decryptPassphrase string
+	readCmd.StringVar(&decryptPassphrase, "p", "", helpDecryptPassphrase)
+	readCmd.StringVar(&decryptPassphrase, "passphrase", "", helpDecryptPassphrase)
 
 	if len(os.Args) == 1 {
 		usage()
@@ -73,7 +102,7 @@ func main() {
 	}
 
 	switch os.Args[1] {
-	case "-h":
+	case "-h", "--help":
 		usage()
 		return
 	case "create":
@@ -86,7 +115,7 @@ func main() {
 	}
 
 	if createCmd.Parsed() {
-		if *secret == "" {
+		if secret == "" {
 			fmt.Fprintf(
 				os.Stderr,
 				"Please supply a secret message using -m option.\n-m  %s\n",
@@ -94,7 +123,7 @@ func main() {
 			)
 			return
 		}
-		if *encryptPassphrase == "" {
+		if encryptPassphrase == "" {
 			fmt.Fprintf(
 				os.Stderr,
 				"Please supply the passphrase using -p option.\n-p  %s\n",
@@ -102,11 +131,11 @@ func main() {
 			)
 			return
 		}
-		createSecret(*secret, *encryptPassphrase, *days, *server)
+		createSecret(secret, encryptPassphrase, days, server)
 	}
 
 	if readCmd.Parsed() {
-		if *link == "" {
+		if link == "" {
 			fmt.Fprintf(
 				os.Stderr,
 				"Please supply the link using -l option.\n-l  %s\n",
@@ -114,7 +143,7 @@ func main() {
 			)
 			return
 		}
-		if *decryptPassphrase == "" {
+		if decryptPassphrase == "" {
 			fmt.Fprintf(
 				os.Stderr,
 				"Please supply the passphrase using -p option.\n-p  %s\n",
@@ -122,7 +151,7 @@ func main() {
 			)
 			return
 		}
-		readSecret(*link, *decryptPassphrase)
+		readSecret(link, decryptPassphrase)
 	}
 }
 
@@ -177,7 +206,6 @@ func createSecret(secret string, passphrase string, days int, server string) {
 
 	var response map[string]interface{}
 	json.NewDecoder(resp.Body).Decode(&response)
-
 	result, ok := response["response"].(map[string]interface{})
 	if !ok {
 		fmt.Fprintf(os.Stderr, "Cannot parse response from server.\n")
@@ -283,34 +311,44 @@ func readSecret(link string, passphrase string) {
 	}
 }
 
+func usageCreate() string {
+	h := "Usage of create:\n"
+	h += "  -h, --help                 Show create help message and exit.\n"
+	h += "  -m, --message    <string>  " + helpSecret + "\n"
+	h += "  -p, --passphrase <string>  " + helpEncryptPassphrase + "\n"
+	h += "  -d, --days       <int>     " + helpDays + "\n"
+	h += "  -s, --server     <string>  " + helpServer + "\n"
+	h += "  example: shhh create -m 'a secret msg' -p P!dhuie0e3bdiu -d 2\n"
+
+	return h
+}
+
+func usageRead() string {
+	h := "Usage of read:\n"
+	h += "  -h, --help                 Show read help message and exit.\n"
+	h += "  -l, --link       <string>  " + helpLink + "\n"
+	h += "  -p, --passphrase <string>  " + helpDecryptPassphrase + "\n"
+	h += "  example: shhh read -l https://shhh-encrypt.herokuapp.com/r/jKD8Uy0A9_51c8asqAYL -p P!dhuie0e3bdiu\n"
+
+	return h
+}
+
 func usage() {
 	h := "Create or read secrets from a Shhh server.\n\n"
+	h += "Find more information at https://github.com/smallwat3r/shhh-cli/blob/master/README.md\n\n"
 
 	h += "Usage:\n"
-	h += "  shhh <command> [<args>]\n\n"
+	h += "  shhh [mode] [option]\n\n"
 
 	h += "Options:\n"
-	h += "  -h         Show help message.\n\n"
+	h += "  -h, --help   Show help message and exit.\n\n"
 
 	h += "Modes:\n"
-	h += "  create     Creates a secret message.\n"
-	h += "  read       Read a secret message.\n\n"
+	h += "  create       Creates a secret message.\n"
+	h += "  read         Read a secret message.\n\n"
 
-	h += "Usage of create:\n"
-	h += "  -h         Show help message.\n"
-	h += "  -m string  " + helpSecret + "\n"
-	h += "  -p string  " + helpEncryptPassphrase + "\n"
-	h += "  -d int     " + helpDays + " (default 3).\n"
-	h += "  -s string  " + helpServer + "\n\n"
-
-	h += "Usage of read:\n"
-	h += "  -h         Show help message.\n"
-	h += "  -l string  " + helpLink + "\n"
-	h += "  -p string  " + helpDecryptPassphrase + "\n\n"
-
-	h += "Examples:\n"
-	h += "  shhh create -m 'this is a secret msg.' -p P!dhuie0e3bdiu -d 2\n"
-	h += "  shhh read -l https://shhh-encrypt.herokuapp.com/r/jKD8Uy0A9_51c8asqAYL -p P!dhuie0e3bdiu\n"
+	h += usageCreate() + "\n"
+	h += usageRead()
 
 	fmt.Println(h)
 }
