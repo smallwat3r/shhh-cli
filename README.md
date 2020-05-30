@@ -66,5 +66,5 @@ Usage of read:
 
 Examples:
   shhh create -m 'this is a secret msg.' -p P!dhuie0e3bdiu -d 2
-  shhh read -l https://shhh-encrypt.herokuapp.com/api/r/jKD8Uy0A9_51c8asqAYL -p P!dhuie0e3bdiu
+  shhh read -l https://shhh-encrypt.herokuapp.com/r/jKD8Uy0A9_51c8asqAYL -p P!dhuie0e3bdiu
 ```

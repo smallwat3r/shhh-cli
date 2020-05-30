@@ -310,7 +310,7 @@ func usage() {
 
 	h += "Examples:\n"
 	h += "  shhh create -m 'this is a secret msg.' -p P!dhuie0e3bdiu -d 2\n"
-	h += "  shhh read -l https://shhh-encrypt.herokuapp.com/api/r/jKD8Uy0A9_51c8asqAYL -p P!dhuie0e3bdiu\n"
+	h += "  shhh read -l https://shhh-encrypt.herokuapp.com/r/jKD8Uy0A9_51c8asqAYL -p P!dhuie0e3bdiu\n"
 
 	fmt.Println(h)
 }
