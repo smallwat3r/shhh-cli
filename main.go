@@ -50,7 +50,9 @@ const (
 	helpSecret            = "Secret message to encrypt."
 	helpEncryptPassphrase = "Passphrase to encrypt secret."
 	helpDays              = "(optional) Number of days to keep the secret alive (default: 3)."
+	helpTries             = "(optional) Number of tries to open secret before it gets deleted (default: 5)."
 	helpServer            = "(optional) Shhh target server (ex: https://shhh-encrypt.herokuapp.com)."
+	helpHaveibeenpwned    = "(optional) If flag set, check passphrase against the haveibeenpwned API."
 
 	// read
 	helpLink              = "URL link to access secret."
@@ -78,9 +80,17 @@ func main() {
 	createCmd.IntVar(&days, "d", 3, helpDays)
 	createCmd.IntVar(&days, "days", 3, helpDays)
 
+	var tries int
+	createCmd.IntVar(&tries, "t", 3, helpTries)
+	createCmd.IntVar(&tries, "tries", 3, helpTries)
+
+	var haveibeenpwned bool
+	createCmd.BoolVar(&haveibeenpwned, "s", false, helpHaveibeenpwned)
+	createCmd.BoolVar(&haveibeenpwned, "secure", false, helpHaveibeenpwned)
+
 	var server string
-	createCmd.StringVar(&server, "s", "", helpServer)
-	createCmd.StringVar(&server, "server", "", helpServer)
+	createCmd.StringVar(&server, "h", "", helpServer)
+	createCmd.StringVar(&server, "host", "", helpServer)
 
 	readCmd := flag.NewFlagSet("read", flag.ExitOnError)
 	readCmd.Usage = func() {
@@ -131,7 +141,7 @@ func main() {
 			)
 			return
 		}
-		createSecret(secret, encryptPassphrase, days, server)
+		createSecret(secret, encryptPassphrase, days, tries, haveibeenpwned, server)
 	}
 
 	if readCmd.Parsed() {
@@ -177,14 +187,16 @@ func getTargetServer(server string) string {
 	return target + "/api/c"
 }
 
-func createSecret(secret string, passphrase string, days int, server string) {
+func createSecret(secret string, passphrase string, days int, tries int, haveibeenpwned bool, server string) {
 	target := getTargetServer(server) // Get target Shhh host
 
 	// Request
 	payload := map[string]interface{}{
-		"secret":     secret,
-		"passphrase": passphrase,
-		"days":       days,
+		"secret":         secret,
+		"passphrase":     passphrase,
+		"days":           days,
+		"tries":          tries,
+		"haveibeenpwned": haveibeenpwned,
 	}
 	bytesRepr, err := json.Marshal(payload)
 	if err != nil {
@@ -194,7 +206,11 @@ func createSecret(secret string, passphrase string, days int, server string) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	if resp.StatusCode < 200 || resp.StatusCode >= 299 {
+	// Make sure the return code is expected
+	if resp.StatusCode != 200 &&
+		resp.StatusCode != 201 &&
+		resp.StatusCode != 422 {
+		fmt.Println(resp.StatusCode)
 		fmt.Fprintf(
 			os.Stderr,
 			"Failed to reach Shhh: returned %d on %s\n",
@@ -280,7 +296,11 @@ func readSecret(link string, passphrase string) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	if resp.StatusCode < 200 || resp.StatusCode >= 299 {
+	// Make sure the return code is expected
+	if resp.StatusCode != 200 &&
+		resp.StatusCode != 401 &&
+		resp.StatusCode != 404 &&
+		resp.StatusCode != 422 {
 		fmt.Fprintf(
 			os.Stderr,
 			"Failed to reach Shhh: returned %d on %s\n",
@@ -317,8 +337,10 @@ func usageCreate() string {
 	h += "  -m, --message    <string>  " + helpSecret + "\n"
 	h += "  -p, --passphrase <string>  " + helpEncryptPassphrase + "\n"
 	h += "  -d, --days       <int>     " + helpDays + "\n"
-	h += "  -s, --server     <string>  " + helpServer + "\n"
-	h += "  example: shhh create -m 'a secret msg' -p P!dhuie0e3bdiu -d 2\n"
+	h += "  -t, --tries      <int>     " + helpTries + "\n"
+	h += "  -h, --host       <string>  " + helpServer + "\n"
+	h += "  -s, --secure               " + helpHaveibeenpwned + "\n"
+	h += "  example: shhh create --message 'a secret msg' --passphrase PdVUe3bdiu --days 2 --secure\n"
 
 	return h
 }
@@ -328,7 +350,7 @@ func usageRead() string {
 	h += "  -h, --help                 Show read help message and exit.\n"
 	h += "  -l, --link       <string>  " + helpLink + "\n"
 	h += "  -p, --passphrase <string>  " + helpDecryptPassphrase + "\n"
-	h += "  example: shhh read -l https://shhh-encrypt.herokuapp.com/r/jKD8Uy0A9_51c8asqAYL -p P!dhuie0e3bdiu\n"
+	h += "  example: shhh read --link https://shhh-encrypt.herokuapp.com/r/jKD8Uy0A9_51c8asqAYL --passphrase PdVUe3bdiu\n"
 
 	return h
 }
