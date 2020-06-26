@@ -12,13 +12,21 @@ terminal.
 
 ## How to install it?  
 
-If you are a Go user:
+#### If you are a Go user
 ```sh
 go get -u github.com/smallwat3r/shhh-cli \
     && mv $GOPATH/bin/shhh-cli $GOPATH/bin/shhh
 ```
 
-Or, shhh-cli has no runtime dependencies, you can download a binary for 
+#### Using Homebrew  
+
+```sh
+brew tap smallwat3r/shhh \
+  && brew install shhh
+```
+
+#### Manually
+Shhh-cli has no runtime dependencies, you can download a binary for 
 your platform [here](https://github.com/smallwat3r/shhh-cli/releases), 
 then rename it `shhh` and place it in your `bin` directory.
 
