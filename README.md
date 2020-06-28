@@ -8,7 +8,7 @@
 This allows you to create and read secrets directly from the 
 terminal.
 
-![shhh-cli](https://i.imgur.com/zGF2015.gif)  
+![shhh-cli](https://i.imgur.com/qLx3aoV.png)  
 
 ## How to install it?  
 
@@ -21,7 +21,7 @@ go get -u github.com/smallwat3r/shhh-cli \
 #### Using Homebrew  
 
 ```sh
-brew tap smallwat3r/shhh \
+brew tap smallwat3r/scripts \
   && brew install shhh
 ```
 
