@@ -8,7 +8,7 @@
 This allows you to create and read secrets directly from the 
 terminal.
 
-![shhh-cli](https://i.imgur.com/uUxkci1.png)  
+![shhh-cli](https://i.imgur.com/DAf4qRg.png)  
 
 ## How to install it?  
 
