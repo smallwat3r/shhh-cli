@@ -35,12 +35,12 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"net/http"
 	"net/url"
 	"os"
 	"path"
 	"reflect"
 
+	"github.com/hashicorp/go-retryablehttp"
 	. "github.com/logrusorgru/aurora"
 )
 
@@ -202,7 +202,12 @@ func createSecret(secret string, passphrase string, days int, tries int, haveibe
 	if err != nil {
 		log.Fatalln(err)
 	}
-	resp, err := http.Post(target, "application/json", bytes.NewBuffer(bytesRepr))
+
+	retryClient := retryablehttp.NewClient()
+	retryClient.RetryMax = 4
+	retryClient.Logger = nil
+
+	resp, err := retryClient.Post(target, "application/json", bytes.NewBuffer(bytesRepr))
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -289,10 +294,14 @@ func readSecret(link string, passphrase string) {
 	q.Add("slug", slug)
 	q.Add("passphrase", passphrase)
 
+	retryClient := retryablehttp.NewClient()
+	retryClient.RetryMax = 4
+	retryClient.Logger = nil
+
 	// Request
 	u.RawQuery = q.Encode()
 	readUrl := u.String()
-	resp, err := http.Get(readUrl)
+	resp, err := retryClient.Get(readUrl)
 	if err != nil {
 		log.Fatalln(err)
 	}
