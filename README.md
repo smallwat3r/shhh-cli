@@ -45,7 +45,7 @@ export SHHH_SERVER=https://<my-custom-shhh-server>.com
 
 Note: this won't impact reading secrets from other Shhh servers, and
 you will still be able to create secrets in other servers using the 
-`--server` option.
+`--host` option.
 
 ## How to use it?  
 
