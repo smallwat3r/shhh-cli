@@ -211,11 +211,10 @@ func createSecret(secret string, passphrase string, days int, tries int, haveibe
 	if err != nil {
 		log.Fatalln(err)
 	}
+
 	// Make sure the return code is expected
-	if resp.StatusCode != 200 &&
-		resp.StatusCode != 201 &&
-		resp.StatusCode != 422 {
-		fmt.Println(resp.StatusCode)
+	expected := map[int]bool{200: true, 201: true, 422: true}
+	if !expected[resp.StatusCode] {
 		fmt.Fprintf(
 			os.Stderr,
 			"Failed to reach Shhh: returned %d on %s\n",
@@ -305,11 +304,10 @@ func readSecret(link string, passphrase string) {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
 	// Make sure the return code is expected
-	if resp.StatusCode != 200 &&
-		resp.StatusCode != 401 &&
-		resp.StatusCode != 404 &&
-		resp.StatusCode != 422 {
+	expected := map[int]bool{200: true, 401: true, 404: true, 422: true}
+	if !expected[resp.StatusCode] {
 		fmt.Fprintf(
 			os.Stderr,
 			"Failed to reach Shhh: returned %d on %s\n",
