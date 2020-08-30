@@ -1,10 +1,10 @@
 // CLI client for Shhh
-//
+
 // Shhh app repo: https://github.com/smallwat3r/shhh
 // Shhh CLI repo: https://github.com/smallwat3r/shhh-cli
-//
+
 // Author: Matthieu Petiteau <mpetiteau.pro@gmail.com>
-//
+
 // MIT License
 //
 // Copyright (c) 2020 Matthieu Petiteau
@@ -339,42 +339,42 @@ func readSecret(link string, passphrase string) {
 }
 
 func usageCreate() string {
-	h := "Usage of create:\n"
-	h += "  -h, --help                 Show create help message and exit.\n"
-	h += "  -m, --message    <string>  " + helpSecret + "\n"
-	h += "  -p, --passphrase <string>  " + helpEncryptPassphrase + "\n"
-	h += "  -d, --days       <int>     " + helpDays + "\n"
-	h += "  -t, --tries      <int>     " + helpTries + "\n"
-	h += "  -h, --host       <string>  " + helpServer + "\n"
-	h += "  -s, --secure               " + helpHaveibeenpwned + "\n"
-	h += "  example: shhh create --message 'a secret msg' --passphrase PdVUe3bdiu --days 2 --secure\n"
+	h := "Usage of create:"
+	h += "\n  -h, --help                 Show create help message and exit."
+	h += "\n  -m, --message    <string>  " + helpSecret
+	h += "\n  -p, --passphrase <string>  " + helpEncryptPassphrase
+	h += "\n  -d, --days       <int>     " + helpDays
+	h += "\n  -t, --tries      <int>     " + helpTries
+	h += "\n  -h, --host       <string>  " + helpServer
+	h += "\n  -s, --secure               " + helpHaveibeenpwned
+	h += "\n\n  example: shhh create --message 'a secret msg' --passphrase PdVUe3bdiu --days 2 --secure\n"
 
 	return h
 }
 
 func usageRead() string {
-	h := "Usage of read:\n"
-	h += "  -h, --help                 Show read help message and exit.\n"
-	h += "  -l, --link       <string>  " + helpLink + "\n"
-	h += "  -p, --passphrase <string>  " + helpDecryptPassphrase + "\n"
-	h += "  example: shhh read --link https://shhh-encrypt.herokuapp.com/r/jKD8Uy0A9_51c8asqAYL --passphrase PdVUe3bdiu\n"
+	h := "Usage of read:"
+	h += "\n  -h, --help                 Show read help message and exit."
+	h += "\n  -l, --link       <string>  " + helpLink
+	h += "\n  -p, --passphrase <string>  " + helpDecryptPassphrase
+	h += "\n\n  example: shhh read --link https://shhh-encrypt.herokuapp.com/r/jKD8Uy0A9_51c8asqAYL --passphrase PdVUe3bdiu\n"
 
 	return h
 }
 
 func usage() {
-	h := "Create or read secrets from a Shhh server.\n\n"
-	h += "Find more information at https://github.com/smallwat3r/shhh-cli/blob/master/README.md\n\n"
+	h := "Create or read secrets from a Shhh server."
+	h += "\n\nFind more information at https://github.com/smallwat3r/shhh-cli/blob/master/README.md"
 
-	h += "Usage:\n"
-	h += "  shhh [mode] [options]\n\n"
+	h += "\n\nUsage:"
+	h += "\n  shhh [mode] [options]"
 
-	h += "Options:\n"
-	h += "  -h, --help   Show help message and exit.\n\n"
+	h += "\n\nOptions:"
+	h += "\n  -h, --help   Show help message and exit."
 
-	h += "Modes:\n"
-	h += "  create       Creates a secret message.\n"
-	h += "  read         Read a secret message.\n\n"
+	h += "\n\nModes:"
+	h += "\n  create       Creates a secret message."
+	h += "\n  read         Read a secret message.\n\n"
 
 	h += usageCreate() + "\n"
 	h += usageRead()

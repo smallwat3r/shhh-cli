@@ -73,11 +73,13 @@ Usage of create:
   -t, --tries      <int>     (optional) Number of tries to open secret before it gets deleted (default: 5).
   -h, --host       <string>  (optional) Shhh target server (ex: https://shhh-encrypt.herokuapp.com).
   -s, --secure               (optional) If flag set, check passphrase against the haveibeenpwned API.
+
   example: shhh create --message 'a secret msg' --passphrase PdVUe3bdiu --days 2 --secure
 
 Usage of read:
   -h, --help                 Show read help message and exit.
   -l, --link       <string>  URL link to access secret.
   -p, --passphrase <string>  Passphrase to decrypt secret.
+
   example: shhh read --link https://shhh-encrypt.herokuapp.com/r/jKD8Uy0A9_51c8asqAYL --passphrase PdVUe3bdiu
 ```
