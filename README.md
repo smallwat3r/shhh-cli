@@ -59,27 +59,28 @@ Usage:
   shhh [mode] [options]
 
 Options:
-  -h, --help   Show help message and exit.
+  -h, --help     Show help message and exit.
+  -v, --version  Show program version and exit.
 
 Modes:
-  create       Creates a secret message.
-  read         Read a secret message.
+  create         Creates a secret message.
+  read           Read a secret message.
 
 Usage of create:
   -h, --help                 Show create help message and exit.
   -m, --message    <string>  Secret message to encrypt.
   -p, --passphrase <string>  Passphrase to encrypt secret.
-  -d, --days       <int>     (optional) Number of days to keep the secret alive (default: 3).
-  -t, --tries      <int>     (optional) Number of tries to open secret before it gets deleted (default: 5).
-  -h, --host       <string>  (optional) Shhh target server (ex: https://shhh-encrypt.herokuapp.com).
-  -s, --secure               (optional) If flag set, check passphrase against the haveibeenpwned API.
+  -d, --days       <int>     (opt) Nb of days to keep the secret alive (default: 3).
+  -t, --tries      <int>     (opt) Max nb of tries to open the secret (default: 5).
+  -h, --host       <string>  (opt) Shhh target server (ex: https://<server>.com).
+  -s, --secure               (opt) Check passphrase against the haveibeenpwned API.
 
-  example: shhh create --message 'a secret msg' --passphrase PdVUe3bdiu --days 2 --secure
+  example: shhh create -m [secret] -p [passphrase] -d 2 -t 3 -s
 
 Usage of read:
   -h, --help                 Show read help message and exit.
   -l, --link       <string>  URL link to access secret.
   -p, --passphrase <string>  Passphrase to decrypt secret.
 
-  example: shhh read --link https://shhh-encrypt.herokuapp.com/r/jKD8Uy0A9_51c8asqAYL --passphrase PdVUe3bdiu
+  example: shhh read -l [link] -p [passphrase]
 ```

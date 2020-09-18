@@ -44,28 +44,32 @@ import (
 	. "github.com/logrusorgru/aurora"
 )
 
-// Params
+// Parameters help information
 const (
-	// create
+	// create mode
 	helpSecret            = "Secret message to encrypt."
 	helpEncryptPassphrase = "Passphrase to encrypt secret."
-	helpDays              = "(optional) Number of days to keep the secret alive (default: 3)."
-	helpTries             = "(optional) Number of tries to open secret before it gets deleted (default: 5)."
-	helpServer            = "(optional) Shhh target server (ex: https://shhh-encrypt.herokuapp.com)."
-	helpHaveibeenpwned    = "(optional) If flag set, check passphrase against the haveibeenpwned API."
+	helpDays              = "(opt) Nb of days to keep the secret alive (default: 3)."
+	helpTries             = "(opt) Max nb of tries to open the secret (default: 5)."
+	helpServer            = "(opt) Shhh target server (ex: https://<server>.com)."
+	helpHaveibeenpwned    = "(opt) Check passphrase against the haveibeenpwned API."
 
-	// read
+	// read mode
 	helpLink              = "URL link to access secret."
 	helpDecryptPassphrase = "Passphrase to decrypt secret."
 )
 
-const separator = "-------------------------------------------------------------------------------"
+// Program version
+var shhhVersion = "1.1.7"
 
 func main() {
+
+	// create mode
 	createCmd := flag.NewFlagSet("create", flag.ExitOnError)
 	createCmd.Usage = func() {
 		h := usageCreate()
 		fmt.Println(h)
+		os.Exit(0)
 	}
 
 	var secret string
@@ -92,10 +96,12 @@ func main() {
 	createCmd.StringVar(&server, "h", "", helpServer)
 	createCmd.StringVar(&server, "host", "", helpServer)
 
+	// read mode
 	readCmd := flag.NewFlagSet("read", flag.ExitOnError)
 	readCmd.Usage = func() {
 		h := usageRead()
 		fmt.Println(h)
+		os.Exit(0)
 	}
 
 	var link string
@@ -106,15 +112,21 @@ func main() {
 	readCmd.StringVar(&decryptPassphrase, "p", "", helpDecryptPassphrase)
 	readCmd.StringVar(&decryptPassphrase, "passphrase", "", helpDecryptPassphrase)
 
+	// Case when no mode or parameters provided
 	if len(os.Args) == 1 {
 		usage()
-		return
+		version()
+		os.Exit(0)
 	}
 
 	switch os.Args[1] {
 	case "-h", "--help":
 		usage()
-		return
+		version()
+		os.Exit(0)
+	case "-v", "--version":
+		version()
+		os.Exit(0)
 	case "create":
 		createCmd.Parse(os.Args[2:])
 	case "read":
@@ -131,7 +143,7 @@ func main() {
 				"Please supply a secret message using -m / --message option.\n-m  %s\n",
 				helpSecret,
 			)
-			return
+			os.Exit(1)
 		}
 		if encryptPassphrase == "" {
 			fmt.Fprintf(
@@ -139,7 +151,7 @@ func main() {
 				"Please supply the passphrase using -p / --passphrase option.\n-p  %s\n",
 				helpEncryptPassphrase,
 			)
-			return
+			os.Exit(1)
 		}
 		createSecret(secret, encryptPassphrase, days, tries, haveibeenpwned, server)
 	}
@@ -151,7 +163,7 @@ func main() {
 				"Please supply the link using -l / --link option.\n-l  %s\n",
 				helpLink,
 			)
-			return
+			os.Exit(1)
 		}
 		if decryptPassphrase == "" {
 			fmt.Fprintf(
@@ -159,17 +171,28 @@ func main() {
 				"Please supply the passphrase using -p / --passphrase option.\n-p  %s\n",
 				helpDecryptPassphrase,
 			)
-			return
+			os.Exit(1)
 		}
 		readSecret(link, decryptPassphrase)
 	}
 }
 
+// Build a simple separator
+func separator(length int) string {
+	sep := ""
+	for i := 0; i < length; i++ {
+		sep += "-"
+	}
+	return sep
+}
+
+// Check URL format
 func isUrl(str string) bool {
 	u, err := url.Parse(str)
 	return err == nil && u.Scheme != "" && u.Host != ""
 }
 
+// Get targeted server
 func getTargetServer(server string) string {
 	target := os.Getenv("SHHH_SERVER") // if Shhh server set up in env
 	if !(server == "") {
@@ -187,6 +210,7 @@ func getTargetServer(server string) string {
 	return target + "/api/c"
 }
 
+// Create a secret
 func createSecret(secret string, passphrase string, days int, tries int, haveibeenpwned bool, server string) {
 	target := getTargetServer(server) // Get target Shhh host
 
@@ -251,18 +275,21 @@ func createSecret(secret string, passphrase string, days int, tries int, haveibe
 				fmt.Println(Red(s.Index(0)))
 			}
 		}
+		os.Exit(1)
 	case "created":
-		fmt.Println(Green(separator))
+		fmt.Println(Green(separator(79)))
 		fmt.Println(Green("Secret link         :"), Bold(Green(result["link"])))
 		fmt.Println(Green("One time passphrase :"), Bold(Green(passphrase)))
 		fmt.Println(Green("Expires on          :"), Bold(Green(result["expires_on"])))
-		fmt.Println(Green(separator))
+		fmt.Println(Green(separator(79)))
+		os.Exit(0)
 	default:
 		fmt.Fprintf(os.Stderr, "Cannot parse response from server.\n")
 		os.Exit(1)
 	}
 }
 
+// Read a secret
 func readSecret(link string, passphrase string) {
 	// Check url is valid
 	if !isUrl(link) {
@@ -328,16 +355,24 @@ func readSecret(link string, passphrase string) {
 	switch result["status"] {
 	case "error", "expired", "invalid":
 		fmt.Println(Red(result["msg"]))
+		os.Exit(1)
 	case "success":
-		fmt.Println(Green(separator))
+		fmt.Println(Green(separator(79)))
 		fmt.Println(Bold(Green(result["msg"])))
-		fmt.Println(Green(separator))
+		fmt.Println(Green(separator(79)))
+		os.Exit(0)
 	default:
 		fmt.Fprintf(os.Stderr, "Cannot parse response from server.\n")
 		os.Exit(1)
 	}
 }
 
+// Print program version
+func version() {
+	fmt.Printf("shhh version %s\n", shhhVersion)
+}
+
+// Print create mode help
 func usageCreate() string {
 	h := "Usage of create:"
 	h += "\n  -h, --help                 Show create help message and exit."
@@ -347,21 +382,23 @@ func usageCreate() string {
 	h += "\n  -t, --tries      <int>     " + helpTries
 	h += "\n  -h, --host       <string>  " + helpServer
 	h += "\n  -s, --secure               " + helpHaveibeenpwned
-	h += "\n\n  example: shhh create --message 'a secret msg' --passphrase PdVUe3bdiu --days 2 --secure\n"
+	h += "\n\n  example: shhh create -m [secret] -p [passphrase] -d 2 -t 3 -s\n"
 
 	return h
 }
 
+// Print read mode help
 func usageRead() string {
 	h := "Usage of read:"
 	h += "\n  -h, --help                 Show read help message and exit."
 	h += "\n  -l, --link       <string>  " + helpLink
 	h += "\n  -p, --passphrase <string>  " + helpDecryptPassphrase
-	h += "\n\n  example: shhh read --link https://shhh-encrypt.herokuapp.com/r/jKD8Uy0A9_51c8asqAYL --passphrase PdVUe3bdiu\n"
+	h += "\n\n  example: shhh read -l [link] -p [passphrase]\n"
 
 	return h
 }
 
+// Print program help
 func usage() {
 	h := "Create or read secrets from a Shhh server."
 	h += "\n\nFind more information at https://github.com/smallwat3r/shhh-cli/blob/master/README.md"
@@ -370,11 +407,12 @@ func usage() {
 	h += "\n  shhh [mode] [options]"
 
 	h += "\n\nOptions:"
-	h += "\n  -h, --help   Show help message and exit."
+	h += "\n  -h, --help     Show help message and exit."
+	h += "\n  -v, --version  Show program version and exit."
 
 	h += "\n\nModes:"
-	h += "\n  create       Creates a secret message."
-	h += "\n  read         Read a secret message.\n\n"
+	h += "\n  create         Creates a secret message."
+	h += "\n  read           Read a secret message.\n\n"
 
 	h += usageCreate() + "\n"
 	h += usageRead()
