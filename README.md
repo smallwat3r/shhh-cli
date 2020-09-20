@@ -3,8 +3,8 @@
 
 ---
 
-**shhh-cli** is a Command Line Interface tool interacting with the 
-[Shhh](https://github.com/smallwat3r) API.  
+**shhh-cli** is a Command Line Interface tool interacting with 
+[Shhh](https://github.com/smallwat3r/shhh).  
 This allows you to create and read secrets directly from the 
 terminal.
 
