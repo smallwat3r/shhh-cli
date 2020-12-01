@@ -1,18 +1,16 @@
 <h3 align="center">shhh-cli</h3>
 <p align="center">Go CLI client for Shhh</p>
 
----
-
 **shhh-cli** is a Command Line Interface tool interacting with 
 [Shhh](https://github.com/smallwat3r/shhh).  
-This allows you to create and read secrets directly from the 
-terminal.
+This util allows you to create and read secrets using Shhh directly from the 
+terminal.  
 
 ![shhh-cli](https://i.imgur.com/DAf4qRg.png)  
 
 ## How to install it?  
 
-#### If you're a GO user
+#### If you're a GO user  
 ```sh
 go get -u github.com/smallwat3r/shhh-cli \
     && mv $GOPATH/bin/shhh-cli $GOPATH/bin/shhh
@@ -27,15 +25,14 @@ brew tap smallwat3r/scripts \
 
 #### Manually  
 
-Shhh-cli has no runtime dependencies, you can download a binary for 
-your platform [here](https://github.com/smallwat3r/shhh-cli/releases), 
-then rename it `shhh` and place it in your `bin` directory.
+This util has no runtime dependencies, you can download a binary for 
+your platform [here](https://github.com/smallwat3r/shhh-cli/releases).
 
 ## Using a self-hosted Shhh instance?  
 
-shhh-cli interacts by default with the official Shhh server. If 
+This util interacts by default with the official Shhh server. If 
 you've set-up your own Shhh server, and want to create secrets 
-from this server by default, you will need to set-up an `SHHH_SERVER`
+from this server by default, you will need to set-up a custom `SHHH_SERVER`
 environment variable.
 
 ```sh
@@ -43,9 +40,9 @@ environment variable.
 export SHHH_SERVER=https://<my-custom-shhh-server>.com
 ```
 
-Note: this won't impact reading secrets from other Shhh servers, and
-you will still be able to create secrets in other servers using the 
-`--host` option.
+_Note: this won't impact reading secrets from external Shhh servers, and
+you will still be able to create secrets using other Shhh servers using the 
+`--host` option._  
 
 ## How to use it?  
 
