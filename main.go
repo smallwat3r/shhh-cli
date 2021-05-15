@@ -352,7 +352,7 @@ func readSecret(link string, passphrase string) {
 
 // Print program version
 func version() {
-	fmt.Printf("shhh version %s\n", shhhVersion)
+	fmt.Printf("shhh-cli version %s\n", shhhVersion)
 }
 
 // Print create mode help
