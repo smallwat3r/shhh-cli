@@ -38,7 +38,6 @@ import (
 	"net/url"
 	"os"
 	"path"
-	"reflect"
 
 	"github.com/hashicorp/go-retryablehttp"
 	. "github.com/logrusorgru/aurora"
@@ -60,7 +59,7 @@ const (
 )
 
 // Program version
-var shhhVersion = "1.1.7"
+var shhhVersion = "1.2.0"
 
 func main() {
 
@@ -258,23 +257,7 @@ func createSecret(secret string, passphrase string, days int, tries int, haveibe
 
 	switch result["status"] {
 	case "error":
-		details, ok := result["details"].(map[string]interface{})
-		if !ok {
-			fmt.Fprintf(os.Stderr, "Cannot parse response from server.\n")
-			os.Exit(1)
-		}
-		errors, ok := details["json"].(map[string]interface{})
-		if !ok {
-			fmt.Fprintf(os.Stderr, "Cannot parse response from server.\n")
-			os.Exit(1)
-		}
-		for _, v := range errors {
-			switch reflect.TypeOf(v).Kind() {
-			case reflect.Slice:
-				s := reflect.ValueOf(v)
-				fmt.Println(Red(s.Index(0)))
-			}
-		}
+		fmt.Println(Red(result["details"]))
 		os.Exit(1)
 	case "created":
 		fmt.Println(Green(separator(79)))
