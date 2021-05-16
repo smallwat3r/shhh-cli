@@ -199,14 +199,14 @@ func getTargetServer(server string) string {
 	}
 	// Default Shhh server target if none specified nor in env or params
 	if target == "" {
-		return "https://shhh-encrypt.herokuapp.com/api/c"
+		return "https://shhh-encrypt.herokuapp.com/api/secret"
 	}
 	// Check url is valid and add API endpoint
 	if !isUrl(target) {
 		fmt.Fprintf(os.Stderr, "Shhh server target URL invalid: %s\n", target)
 		os.Exit(1)
 	}
-	return target + "/api/c"
+	return target + "/api/secret"
 }
 
 // Create a secret
@@ -290,7 +290,7 @@ func readSecret(link string, passphrase string) {
 	p := l.Path
 	slug := path.Base(p) // Get unique slug from link URL
 
-	apiUrl := host + "/api/r"
+	apiUrl := host + "/api/secret"
 	u, err := url.Parse(apiUrl)
 	if err != nil {
 		log.Fatalln(err)
