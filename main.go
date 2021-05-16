@@ -59,7 +59,7 @@ const (
 )
 
 // Program version
-var shhhVersion = "1.2.0"
+var shhhVersion = "1.2.1"
 
 func main() {
 
