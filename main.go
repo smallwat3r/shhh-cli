@@ -48,8 +48,8 @@ const (
 	// create mode
 	helpSecret            = "Secret message to encrypt."
 	helpEncryptPassphrase = "Passphrase to encrypt secret."
-	helpDays              = "(opt) Nb of days to keep the secret alive (default: 3)."
-	helpTries             = "(opt) Max nb of tries to open the secret (default: 5)."
+	helpExpire            = "(opt) How long to keep the secret alive: 10m, 30m, 1h, 3h, 6h, 1d, 2d, 3d, 5d or 7d (default: 3d)."
+	helpTries             = "(opt) Max nb of tries to open the secret: 3, 5 or 7 (default: 5))."
 	helpServer            = "(opt) Shhh target server (ex: https://<server>.com)."
 	helpHaveibeenpwned    = "(opt) Check passphrase against the haveibeenpwned API."
 
@@ -59,7 +59,7 @@ const (
 )
 
 // Program version
-var shhhVersion = "1.2.1"
+var shhhVersion = "1.3.0"
 
 func main() {
 
@@ -79,9 +79,9 @@ func main() {
 	createCmd.StringVar(&encryptPassphrase, "p", "", helpEncryptPassphrase)
 	createCmd.StringVar(&encryptPassphrase, "passphrase", "", helpEncryptPassphrase)
 
-	var days int
-	createCmd.IntVar(&days, "d", 3, helpDays)
-	createCmd.IntVar(&days, "days", 3, helpDays)
+	var expire string
+	createCmd.StringVar(&expire, "e", "3d", helpExpire)
+	createCmd.StringVar(&expire, "expire", "3d", helpExpire)
 
 	var tries int
 	createCmd.IntVar(&tries, "t", 3, helpTries)
@@ -152,7 +152,7 @@ func main() {
 			)
 			os.Exit(1)
 		}
-		createSecret(secret, encryptPassphrase, days, tries, haveibeenpwned, server)
+		createSecret(secret, encryptPassphrase, expire, tries, haveibeenpwned, server)
 	}
 
 	if readCmd.Parsed() {
@@ -210,14 +210,14 @@ func getTargetServer(server string) string {
 }
 
 // Create a secret
-func createSecret(secret string, passphrase string, days int, tries int, haveibeenpwned bool, server string) {
+func createSecret(secret string, passphrase string, expire string, tries int, haveibeenpwned bool, server string) {
 	target := getTargetServer(server) // Get target Shhh host
 
 	// Request
 	payload := map[string]interface{}{
 		"secret":         secret,
 		"passphrase":     passphrase,
-		"days":           days,
+		"expire":         expire,
 		"tries":          tries,
 		"haveibeenpwned": haveibeenpwned,
 	}
@@ -361,11 +361,11 @@ func usageCreate() string {
 	h += "\n  -h, --help                 Show create help message and exit."
 	h += "\n  -m, --message    <string>  " + helpSecret
 	h += "\n  -p, --passphrase <string>  " + helpEncryptPassphrase
-	h += "\n  -d, --days       <int>     " + helpDays
+	h += "\n  -e, --expire     <int>     " + helpExpire
 	h += "\n  -t, --tries      <int>     " + helpTries
 	h += "\n  -h, --host       <string>  " + helpServer
 	h += "\n  -s, --secure               " + helpHaveibeenpwned
-	h += "\n\n  example: shhh create -m [secret] -p [passphrase] -d 2 -t 3 -s\n"
+	h += "\n\n  example: shhh create -m [secret] -p [passphrase] -e 30m -t 3 -s\n"
 
 	return h
 }
