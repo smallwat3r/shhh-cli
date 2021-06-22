@@ -47,17 +47,17 @@ Let's create a secret:
 ```
 $ shhh create -m "The secret message" -p db928bdSBJ -e 1h
 -------------------------------------------------------------------------------
-Secret link         : http://<server>/secret/m5ZNRv6e5L4k2OwVr7qf
+Secret link         : https://<server>/secret/m5ZNRv6e5L4k2OwVr7qf
 One time passphrase : db928bdSBJ
 Expires on          : June 23, 2021 at 00:01 UTC
 -------------------------------------------------------------------------------
 ```
 
-You can now send this snippet to the receiver in a chat or email.
+You can now send this snippet to your recipient in a chat or email.
 
 If you receive a secret, you can also read it as follows:
 ```
-$ shhh read -l http://<server>/secret/m5ZNRv6e5L4k2OwVr7qf -p db928bdSBJ
+$ shhh read -l https://<server>/secret/m5ZNRv6e5L4k2OwVr7qf -p db928bdSBJ
 -------------------------------------------------------------------------------
 The secret message
 -------------------------------------------------------------------------------
