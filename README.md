@@ -9,7 +9,7 @@ create and read secrets using Shhh directly from the terminal.
 
 #### If you're a GO user  
 ```sh
-go get -u github.com/smallwat3r/shhh-cli \
+GO111MODULE=auto go get -u github.com/smallwat3r/shhh-cli \
     && mv $GOPATH/bin/shhh-cli $GOPATH/bin/shhh
 ```
 
