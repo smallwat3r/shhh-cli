@@ -49,7 +49,7 @@ const (
 	helpSecret            = "Secret message to encrypt."
 	helpEncryptPassphrase = "Passphrase to encrypt secret."
 	helpExpire            = "(opt) How long to keep the secret alive: 10m, 30m, 1h, 3h, 6h, 1d, 2d, 3d, 5d or 7d (default: 3d)."
-	helpTries             = "(opt) Max nb of tries to open the secret: 3, 5 or 7 (default: 5))."
+	helpTries             = "(opt) Max nb of tries to open the secret: 3, 5 or 7 (default: 5)."
 	helpServer            = "(opt) Shhh target server (ex: https://<server>.com)."
 	helpHaveibeenpwned    = "(opt) Check passphrase against the haveibeenpwned API."
 

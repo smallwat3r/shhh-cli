@@ -86,7 +86,7 @@ Usage of create:
   -m, --message    <string>  Secret message to encrypt.
   -p, --passphrase <string>  Passphrase to encrypt secret.
   -e, --expire     <int>     (opt) How long to keep the secret alive: 10m, 30m, 1h, 3h, 6h, 1d, 2d, 3d, 5d or 7d (default: 3d).
-  -t, --tries      <int>     (opt) Max nb of tries to open the secret: 3, 5 or 7 (default: 5)).
+  -t, --tries      <int>     (opt) Max nb of tries to open the secret: 3, 5 or 7 (default: 5).
   -h, --host       <string>  (opt) Shhh target server (ex: https://<server>.com).
   -s, --secure               (opt) Check passphrase against the haveibeenpwned API.
 
