@@ -289,7 +289,6 @@ func createSecret(
 func readSecret(link string, passphrase string) {
 	if !isUrl(link) {
 		fmt.Fprintf(os.Stderr, "Shhh server link URL invalid: %s\n\n", link)
-		fmt.Println()
 		os.Exit(1)
 	}
 
