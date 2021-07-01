@@ -223,42 +223,6 @@ func main() {
 	}
 }
 
-// Build a simple separator
-func separator(length int) string {
-	sep := ""
-	for i := 0; i < length; i++ {
-		sep += "-"
-	}
-	return sep
-}
-
-// Check URL format
-func isUrl(str string) bool {
-	u, err := url.Parse(str)
-	return err == nil && u.Scheme != "" && u.Host != ""
-}
-
-// Get endpoint for the targeted server
-func getTargetServer(server string) string {
-	target := os.Getenv("SHHH_SERVER")
-	if !(server == "") {
-		target = server
-	}
-	// Default Shhh server target if none specified nor in env or params
-	if target == "" {
-		return "https://shhh-encrypt.herokuapp.com/api/secret"
-	}
-	if !isUrl(target) {
-		fmt.Fprintf(
-			os.Stderr,
-			"Shhh server target URL invalid: %s\n\n",
-			target,
-		)
-		os.Exit(1)
-	}
-	return target + "/api/secret"
-}
-
 func createSecret(
 	secret string,
 	passphrase string,
@@ -267,8 +231,7 @@ func createSecret(
 	haveibeenpwned bool,
 	server string,
 ) {
-
-	target := getTargetServer(server) // Get target Shhh host
+	target := getTargetServer(server)
 
 	payload := map[string]interface{}{
 		"secret":         secret,
@@ -287,7 +250,6 @@ func createSecret(
 		log.Fatalln(err)
 	}
 
-	// Make sure the return code is expected
 	expected := map[int]bool{200: true, 201: true, 422: true}
 	if !expected[resp.StatusCode] {
 		fmt.Fprintf(
@@ -325,15 +287,12 @@ func createSecret(
 }
 
 func readSecret(link string, passphrase string) {
-
-	// Check url validity
 	if !isUrl(link) {
 		fmt.Fprintf(os.Stderr, "Shhh server link URL invalid: %s\n\n", link)
 		fmt.Println()
 		os.Exit(1)
 	}
 
-	// Build API endpoint from link
 	l, err := url.Parse(link)
 	if err != nil {
 		log.Fatalln(err)
@@ -341,7 +300,7 @@ func readSecret(link string, passphrase string) {
 	host := l.Scheme + "://" + l.Host
 
 	p := l.Path
-	slug := path.Base(p) // Get unique slug from link URL
+	slug := path.Base(p)
 
 	apiUrl := host + "/api/secret"
 	u, err := url.Parse(apiUrl)
@@ -356,7 +315,6 @@ func readSecret(link string, passphrase string) {
 	q.Add("slug", slug)
 	q.Add("passphrase", passphrase)
 
-	// Request
 	u.RawQuery = q.Encode()
 	readUrl := u.String()
 	resp, err := http.Get(readUrl)
@@ -364,7 +322,6 @@ func readSecret(link string, passphrase string) {
 		log.Fatalln(err)
 	}
 
-	// Make sure the return code is expected
 	expected := map[int]bool{200: true, 401: true, 404: true, 422: true}
 	if !expected[resp.StatusCode] {
 		fmt.Fprintf(
@@ -397,4 +354,38 @@ func readSecret(link string, passphrase string) {
 		fmt.Fprintf(os.Stderr, "Couldn't read response from server\n\n")
 		os.Exit(1)
 	}
+}
+
+func separator(length int) string {
+	sep := ""
+	for i := 0; i < length; i++ {
+		sep += "-"
+	}
+	return sep
+}
+
+func isUrl(str string) bool {
+	u, err := url.Parse(str)
+	return err == nil && u.Scheme != "" && u.Host != ""
+}
+
+// Get endpoint for the targeted server
+func getTargetServer(server string) string {
+	target := os.Getenv("SHHH_SERVER")
+	if !(server == "") {
+		target = server
+	}
+	// Default Shhh server target if none specified nor in env or params
+	if target == "" {
+		return "https://shhh-encrypt.herokuapp.com/api/secret"
+	}
+	if !isUrl(target) {
+		fmt.Fprintf(
+			os.Stderr,
+			"Shhh server target URL invalid: %s\n\n",
+			target,
+		)
+		os.Exit(1)
+	}
+	return target + "/api/secret"
 }
