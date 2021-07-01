@@ -1,9 +1,9 @@
 // CLI client for Shhh
 
-// Shhh app repo: https://github.com/smallwat3r/shhh
-// Shhh CLI repo: https://github.com/smallwat3r/shhh-cli
+// Shhh-cli source code: https://github.com/smallwat3r/shhh-cli
+// Shhh source code: https://github.com/smallwat3r/shhh
 
-// Author: Matthieu Petiteau <mpetiteau.pro@gmail.com>
+// Author: Smallwat3r - Matthieu Petiteau <mpetiteau.pro@gmail.com>
 
 // MIT License
 //
@@ -35,35 +35,84 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net/http"
 	"net/url"
 	"os"
 	"path"
 
-	"github.com/hashicorp/go-retryablehttp"
-	. "github.com/logrusorgru/aurora"
+	"github.com/fatih/color"
 )
 
-// Parameters help information
+var (
+	shhhVersion = "1.3.1"
+)
+
+// Create mode
 const (
-	// create mode
 	helpSecret            = "Secret message to encrypt."
 	helpEncryptPassphrase = "Passphrase to encrypt secret."
 	helpExpire            = "(opt) How long to keep the secret alive: 10m, 30m, 1h, 3h, 6h, 1d, 2d, 3d, 5d or 7d (default: 3d)."
 	helpTries             = "(opt) Max nb of tries to open the secret: 3, 5 or 7 (default: 5)."
 	helpServer            = "(opt) Shhh target server (ex: https://<server>.com)."
 	helpHaveibeenpwned    = "(opt) Check passphrase against the haveibeenpwned API."
+)
 
-	// read mode
+// Read mode
+const (
 	helpLink              = "URL link to access secret."
 	helpDecryptPassphrase = "Passphrase to decrypt secret."
 )
 
-// Program version
-var shhhVersion = "1.3.0"
+func version() {
+	fmt.Printf("shhh-cli version %s\n\n", shhhVersion)
+}
+
+func usageCreate() string {
+	h := "Usage of create:"
+	h += "\n  -h, --help                 Show create help message and exit."
+	h += "\n  -m, --message    <string>  " + helpSecret
+	h += "\n  -p, --passphrase <string>  " + helpEncryptPassphrase
+	h += "\n  -e, --expire     <int>     " + helpExpire
+	h += "\n  -t, --tries      <int>     " + helpTries
+	h += "\n  -h, --host       <string>  " + helpServer
+	h += "\n  -s, --secure               " + helpHaveibeenpwned
+	h += "\n\n  example: shhh create -m [secret] -p [passphrase] -e 30m -t 3 -s\n\n"
+
+	return h
+}
+
+func usageRead() string {
+	h := "Usage of read:"
+	h += "\n  -h, --help                 Show read help message and exit."
+	h += "\n  -l, --link       <string>  " + helpLink
+	h += "\n  -p, --passphrase <string>  " + helpDecryptPassphrase
+	h += "\n\n  example: shhh read -l [link] -p [passphrase]\n\n"
+
+	return h
+}
+
+func usage() {
+	h := "Create or read secrets from a Shhh server."
+	h += "\n\nFind more information at https://github.com/smallwat3r/shhh-cli/blob/master/README.md"
+
+	h += "\n\nUsage:"
+	h += "\n  shhh [mode] [options]"
+
+	h += "\n\nOptions:"
+	h += "\n  -h, --help     Show help message and exit."
+	h += "\n  -v, --version  Show program version and exit."
+
+	h += "\n\nModes:"
+	h += "\n  create         Creates a secret message."
+	h += "\n  read           Read a secret message.\n\n"
+
+	h += usageCreate() + "\n"
+	h += usageRead()
+
+	fmt.Println(h)
+}
 
 func main() {
-
-	// create mode
 	createCmd := flag.NewFlagSet("create", flag.ExitOnError)
 	createCmd.Usage = func() {
 		h := usageCreate()
@@ -95,7 +144,6 @@ func main() {
 	createCmd.StringVar(&server, "h", "", helpServer)
 	createCmd.StringVar(&server, "host", "", helpServer)
 
-	// read mode
 	readCmd := flag.NewFlagSet("read", flag.ExitOnError)
 	readCmd.Usage = func() {
 		h := usageRead()
@@ -111,17 +159,16 @@ func main() {
 	readCmd.StringVar(&decryptPassphrase, "p", "", helpDecryptPassphrase)
 	readCmd.StringVar(&decryptPassphrase, "passphrase", "", helpDecryptPassphrase)
 
-	// Case when no mode or parameters provided
 	if len(os.Args) == 1 {
-		usage()
 		version()
+		usage()
 		os.Exit(0)
 	}
 
 	switch os.Args[1] {
 	case "-h", "--help":
-		usage()
 		version()
+		usage()
 		os.Exit(0)
 	case "-v", "--version":
 		version()
@@ -131,7 +178,7 @@ func main() {
 	case "read":
 		readCmd.Parse(os.Args[2:])
 	default:
-		fmt.Fprintf(os.Stderr, "%q is not valid command.\n", os.Args[1])
+		fmt.Fprintf(os.Stderr, "%q is not valid command\n\n", os.Args[1])
 		os.Exit(127)
 	}
 
@@ -139,36 +186,36 @@ func main() {
 		if secret == "" {
 			fmt.Fprintf(
 				os.Stderr,
-				"Please supply a secret message using -m / --message option.\n-m  %s\n",
-				helpSecret,
+				"Supply a message to encrypt using --message\n\n",
 			)
 			os.Exit(1)
 		}
 		if encryptPassphrase == "" {
 			fmt.Fprintf(
 				os.Stderr,
-				"Please supply the passphrase using -p / --passphrase option.\n-p  %s\n",
-				helpEncryptPassphrase,
+				"Supply a passphrase using --passphrase\n\n",
 			)
 			os.Exit(1)
 		}
-		createSecret(secret, encryptPassphrase, expire, tries, haveibeenpwned, server)
+		createSecret(
+			secret,
+			encryptPassphrase,
+			expire,
+			tries,
+			haveibeenpwned,
+			server,
+		)
 	}
 
 	if readCmd.Parsed() {
 		if link == "" {
-			fmt.Fprintf(
-				os.Stderr,
-				"Please supply the link using -l / --link option.\n-l  %s\n",
-				helpLink,
-			)
+			fmt.Fprintf(os.Stderr, "Supply a link using --link\n\n")
 			os.Exit(1)
 		}
 		if decryptPassphrase == "" {
 			fmt.Fprintf(
 				os.Stderr,
-				"Please supply the passphrase using -p / --passphrase option.\n-p  %s\n",
-				helpDecryptPassphrase,
+				"Supply a passphrase using --passphrase\n\n",
 			)
 			os.Exit(1)
 		}
@@ -191,9 +238,9 @@ func isUrl(str string) bool {
 	return err == nil && u.Scheme != "" && u.Host != ""
 }
 
-// Get targeted server
+// Get endpoint for the targeted server
 func getTargetServer(server string) string {
-	target := os.Getenv("SHHH_SERVER") // if Shhh server set up in env
+	target := os.Getenv("SHHH_SERVER")
 	if !(server == "") {
 		target = server
 	}
@@ -201,19 +248,28 @@ func getTargetServer(server string) string {
 	if target == "" {
 		return "https://shhh-encrypt.herokuapp.com/api/secret"
 	}
-	// Check url is valid and add API endpoint
 	if !isUrl(target) {
-		fmt.Fprintf(os.Stderr, "Shhh server target URL invalid: %s\n", target)
+		fmt.Fprintf(
+			os.Stderr,
+			"Shhh server target URL invalid: %s\n\n",
+			target,
+		)
 		os.Exit(1)
 	}
 	return target + "/api/secret"
 }
 
-// Create a secret
-func createSecret(secret string, passphrase string, expire string, tries int, haveibeenpwned bool, server string) {
+func createSecret(
+	secret string,
+	passphrase string,
+	expire string,
+	tries int,
+	haveibeenpwned bool,
+	server string,
+) {
+
 	target := getTargetServer(server) // Get target Shhh host
 
-	// Request
 	payload := map[string]interface{}{
 		"secret":         secret,
 		"passphrase":     passphrase,
@@ -226,11 +282,7 @@ func createSecret(secret string, passphrase string, expire string, tries int, ha
 		log.Fatalln(err)
 	}
 
-	retryClient := retryablehttp.NewClient()
-	retryClient.RetryMax = 4
-	retryClient.Logger = nil
-
-	resp, err := retryClient.Post(target, "application/json", bytes.NewBuffer(bytesRepr))
+	resp, err := http.Post(target, "application/json", bytes.NewBuffer(bytesRepr))
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -240,7 +292,7 @@ func createSecret(secret string, passphrase string, expire string, tries int, ha
 	if !expected[resp.StatusCode] {
 		fmt.Fprintf(
 			os.Stderr,
-			"Failed to reach Shhh: returned %d on %s\n",
+			"Failed to reach server: returned %d on %s\n\n",
 			resp.StatusCode,
 			target,
 		)
@@ -251,32 +303,33 @@ func createSecret(secret string, passphrase string, expire string, tries int, ha
 	json.NewDecoder(resp.Body).Decode(&response)
 	result, ok := response["response"].(map[string]interface{})
 	if !ok {
-		fmt.Fprintf(os.Stderr, "Cannot parse response from server.\n")
+		fmt.Fprintf(os.Stderr, "Couldn't read response from server\n\n")
 		os.Exit(1)
 	}
 
 	switch result["status"] {
 	case "error":
-		fmt.Println(Red(result["details"]))
+		color.Red("%s\n\n", result["details"].(string))
 		os.Exit(1)
 	case "created":
-		fmt.Println(Green(separator(79)))
-		fmt.Println(Green("Secret link         :"), Bold(Green(result["link"])))
-		fmt.Println(Green("One time passphrase :"), Bold(Green(passphrase)))
-		fmt.Println(Green("Expires on          :"), Bold(Green(result["expires_on"])))
-		fmt.Println(Green(separator(79)))
+		color.Green(separator(79))
+		color.Green("Secret link         : %s", result["link"].(string))
+		color.Green("One time passphrase : %s", passphrase)
+		color.Green("Expires on          : %s", result["expires_on"].(string))
+		color.Green("%s\n\n", separator(79))
 		os.Exit(0)
 	default:
-		fmt.Fprintf(os.Stderr, "Cannot parse response from server.\n")
+		fmt.Fprintf(os.Stderr, "Couldn't read response from server\n\n")
 		os.Exit(1)
 	}
 }
 
-// Read a secret
 func readSecret(link string, passphrase string) {
-	// Check url is valid
+
+	// Check url validity
 	if !isUrl(link) {
-		fmt.Fprintf(os.Stderr, "Shhh server link URL invalid: %s\n", link)
+		fmt.Fprintf(os.Stderr, "Shhh server link URL invalid: %s\n\n", link)
+		fmt.Println()
 		os.Exit(1)
 	}
 
@@ -303,14 +356,10 @@ func readSecret(link string, passphrase string) {
 	q.Add("slug", slug)
 	q.Add("passphrase", passphrase)
 
-	retryClient := retryablehttp.NewClient()
-	retryClient.RetryMax = 4
-	retryClient.Logger = nil
-
 	// Request
 	u.RawQuery = q.Encode()
 	readUrl := u.String()
-	resp, err := retryClient.Get(readUrl)
+	resp, err := http.Get(readUrl)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -320,7 +369,7 @@ func readSecret(link string, passphrase string) {
 	if !expected[resp.StatusCode] {
 		fmt.Fprintf(
 			os.Stderr,
-			"Failed to reach Shhh: returned %d on %s\n",
+			"Failed to reach server: returned %d on %s\n\n",
 			resp.StatusCode,
 			link,
 		)
@@ -331,74 +380,21 @@ func readSecret(link string, passphrase string) {
 	json.NewDecoder(resp.Body).Decode(&response)
 	result, ok := response["response"].(map[string]interface{})
 	if !ok {
-		fmt.Fprintf(os.Stderr, "Cannot parse response from server.\n")
+		fmt.Fprintf(os.Stderr, "Couldn't read response from server\n\n")
 		os.Exit(1)
 	}
 
 	switch result["status"] {
 	case "error", "expired", "invalid":
-		fmt.Println(Red(result["msg"]))
+		color.Red("%s\n\n", result["msg"].(string))
 		os.Exit(1)
 	case "success":
-		fmt.Println(Green(separator(79)))
-		fmt.Println(Bold(Green(result["msg"])))
-		fmt.Println(Green(separator(79)))
+		color.Green(separator(79))
+		color.Green(result["msg"].(string))
+		color.Green("%s\n\n", separator(79))
 		os.Exit(0)
 	default:
-		fmt.Fprintf(os.Stderr, "Cannot parse response from server.\n")
+		fmt.Fprintf(os.Stderr, "Couldn't read response from server\n\n")
 		os.Exit(1)
 	}
-}
-
-// Print program version
-func version() {
-	fmt.Printf("shhh-cli version %s\n", shhhVersion)
-}
-
-// Print create mode help
-func usageCreate() string {
-	h := "Usage of create:"
-	h += "\n  -h, --help                 Show create help message and exit."
-	h += "\n  -m, --message    <string>  " + helpSecret
-	h += "\n  -p, --passphrase <string>  " + helpEncryptPassphrase
-	h += "\n  -e, --expire     <int>     " + helpExpire
-	h += "\n  -t, --tries      <int>     " + helpTries
-	h += "\n  -h, --host       <string>  " + helpServer
-	h += "\n  -s, --secure               " + helpHaveibeenpwned
-	h += "\n\n  example: shhh create -m [secret] -p [passphrase] -e 30m -t 3 -s\n"
-
-	return h
-}
-
-// Print read mode help
-func usageRead() string {
-	h := "Usage of read:"
-	h += "\n  -h, --help                 Show read help message and exit."
-	h += "\n  -l, --link       <string>  " + helpLink
-	h += "\n  -p, --passphrase <string>  " + helpDecryptPassphrase
-	h += "\n\n  example: shhh read -l [link] -p [passphrase]\n"
-
-	return h
-}
-
-// Print program help
-func usage() {
-	h := "Create or read secrets from a Shhh server."
-	h += "\n\nFind more information at https://github.com/smallwat3r/shhh-cli/blob/master/README.md"
-
-	h += "\n\nUsage:"
-	h += "\n  shhh [mode] [options]"
-
-	h += "\n\nOptions:"
-	h += "\n  -h, --help     Show help message and exit."
-	h += "\n  -v, --version  Show program version and exit."
-
-	h += "\n\nModes:"
-	h += "\n  create         Creates a secret message."
-	h += "\n  read           Read a secret message.\n\n"
-
-	h += usageCreate() + "\n"
-	h += usageRead()
-
-	fmt.Println(h)
 }

@@ -1,8 +1,5 @@
-module shhh
+module github.com/smallwat3r/shhh-cli
 
-go 1.14
+go 1.16
 
-require (
-	github.com/hashicorp/go-retryablehttp v0.6.6
-	github.com/logrusorgru/aurora v0.0.0-20200102142835-e9ef32dff381
-)
+require github.com/fatih/color v1.12.0
