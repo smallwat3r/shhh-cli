@@ -44,7 +44,7 @@ import (
 )
 
 var (
-	shhhVersion = "1.3.1"
+	shhhCLIVersion = "1.3.2"
 )
 
 // Create mode
@@ -64,7 +64,7 @@ const (
 )
 
 func version() {
-	fmt.Printf("shhh-cli version %s\n\n", shhhVersion)
+	fmt.Printf("shhh-cli version %s\n\n", shhhCLIVersion)
 }
 
 func usageCreate() string {
@@ -376,7 +376,7 @@ func getTargetServer(server string) string {
 	}
 	// Default Shhh server target if none specified nor in env or params
 	if target == "" {
-		return "https://shhh-encrypt.herokuapp.com/api/secret"
+		return "https://www.shhh-encrypt/api/secret"
 	}
 	if !isUrl(target) {
 		fmt.Fprintf(
