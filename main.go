@@ -376,7 +376,7 @@ func getTargetServer(server string) string {
 	}
 	// Default Shhh server target if none specified nor in env or params
 	if target == "" {
-		return "https://shhh-encrypt.herokuapp.com/api/secret"
+		return "https://www.shhh-encrypt/api/secret"
 	}
 	if !isUrl(target) {
 		fmt.Fprintf(
