@@ -24,12 +24,7 @@ pack: build
 	@echo ">> Packaging artifacts"
 	@cd dist && \
 	for d in $(APP)_*; do \
-	  if echo $$d | grep -qi windows; then \
-	    cp "$$d/$(APP)" "$$d/$(APP).exe"; \
-	    zip -q "$${d}.zip" "$$d/$(APP).exe"; \
-	  else \
-	    tar czf "$${d}.tar.gz" -C "$$d" $(APP); \
-	  fi; \
+	  tar czf "$${d}.tar.gz" -C "$$d" $(APP); \
 	done
 
 release: clean pack
