@@ -66,6 +66,8 @@ The secret message
 Access the help menu:
 ```
 $ shhh --help
+shhh-cli version 1.3.3
+
 Create or read secrets from a Shhh server.
 
 Find more information at https://github.com/smallwat3r/shhh-cli/blob/master/README.md
@@ -85,12 +87,12 @@ Usage of create:
   -h, --help                 Show create help message and exit.
   -m, --message    <string>  Secret message to encrypt.
   -p, --passphrase <string>  Passphrase to encrypt secret.
-  -e, --expire     <int>     (opt) How long to keep the secret alive: 10m, 30m, 1h, 3h, 6h, 1d, 2d, 3d, 5d or 7d (default: 3d).
+  -e, --expire     <string>  (opt) How long to keep the secret alive: 10m, 30m, 1h, 3h, 6h, 1d, 2d, 3d, 5d or 7d (default: 3d).
   -t, --tries      <int>     (opt) Max nb of tries to open the secret: 3, 5 or 7 (default: 5).
-  -h, --host       <string>  (opt) Shhh target server (ex: https://<server>.com).
-  -s, --secure               (opt) Check passphrase against the haveibeenpwned API.
+  -H, --host       <string>  (opt) Shhh target server (ex: https://<server>.com).
 
-  example: shhh create -m [secret] -p [passphrase] -e 30m -t 3 -s
+  example: shhh create -m [secret] -p [passphrase] -e 30m -t 3
+
 
 Usage of read:
   -h, --help                 Show read help message and exit.
@@ -98,6 +100,4 @@ Usage of read:
   -p, --passphrase <string>  Passphrase to decrypt secret.
 
   example: shhh read -l [link] -p [passphrase]
-
-shhh-cli version 1.3.0
 ```
