@@ -1,64 +1,41 @@
 // CLI client for Shhh
-
-// Shhh-cli source code: https://github.com/smallwat3r/shhh-cli
-// Shhh source code: https://github.com/smallwat3r/shhh
-
-// Author: Smallwat3r - Matthieu Petiteau <mpetiteau.pro@gmail.com>
-
-// MIT License
 //
-// Copyright (c) 2020 Matthieu Petiteau
+// Original: https://github.com/smallwat3r/shhh-cli
+// Service:  https://github.com/smallwat3r/shhh
 //
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
+// MIT License © 2020 Matthieu Petiteau
 
 package main
 
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
-	"log"
+	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
 	"path"
+	"strings"
+	"time"
 
 	"github.com/fatih/color"
 )
 
-var (
-	shhhCLIVersion = "1.3.2"
-)
+var shhhCLIVersion = "1.3.3"
 
-// Create mode
 const (
+	// Create mode
 	helpSecret            = "Secret message to encrypt."
 	helpEncryptPassphrase = "Passphrase to encrypt secret."
 	helpExpire            = "(opt) How long to keep the secret alive: 10m, 30m, 1h, 3h, 6h, 1d, 2d, 3d, 5d or 7d (default: 3d)."
 	helpTries             = "(opt) Max nb of tries to open the secret: 3, 5 or 7 (default: 5)."
 	helpServer            = "(opt) Shhh target server (ex: https://<server>.com)."
-	helpHaveibeenpwned    = "(opt) Check passphrase against the haveibeenpwned API."
-)
 
-// Read mode
-const (
+	// Read mode
 	helpLink              = "URL link to access secret."
 	helpDecryptPassphrase = "Passphrase to decrypt secret."
 )
@@ -68,57 +45,88 @@ func version() {
 }
 
 func usageCreate() string {
-	h := "Usage of create:"
-	h += "\n  -h, --help                 Show create help message and exit."
-	h += "\n  -m, --message    <string>  " + helpSecret
-	h += "\n  -p, --passphrase <string>  " + helpEncryptPassphrase
-	h += "\n  -e, --expire     <int>     " + helpExpire
-	h += "\n  -t, --tries      <int>     " + helpTries
-	h += "\n  -h, --host       <string>  " + helpServer
-	h += "\n  -s, --secure               " + helpHaveibeenpwned
-	h += "\n\n  example: shhh create -m [secret] -p [passphrase] -e 30m -t 3 -s\n\n"
-
-	return h
+	var b strings.Builder
+	b.WriteString("Usage of create:")
+	b.WriteString("\n  -h, --help                 Show create help message and exit.")
+	b.WriteString("\n  -m, --message    <string>  " + helpSecret)
+	b.WriteString("\n  -p, --passphrase <string>  " + helpEncryptPassphrase)
+	b.WriteString("\n  -e, --expire     <string>  " + helpExpire)
+	b.WriteString("\n  -t, --tries      <int>     " + helpTries)
+	b.WriteString("\n  -H, --host       <string>  " + helpServer)
+	b.WriteString("\n\n  example: shhh create -m [secret] -p [passphrase] -e 30m -t 3\n\n")
+	return b.String()
 }
 
 func usageRead() string {
-	h := "Usage of read:"
-	h += "\n  -h, --help                 Show read help message and exit."
-	h += "\n  -l, --link       <string>  " + helpLink
-	h += "\n  -p, --passphrase <string>  " + helpDecryptPassphrase
-	h += "\n\n  example: shhh read -l [link] -p [passphrase]\n\n"
-
-	return h
+	var b strings.Builder
+	b.WriteString("Usage of read:")
+	b.WriteString("\n  -h, --help                 Show read help message and exit.")
+	b.WriteString("\n  -l, --link       <string>  " + helpLink)
+	b.WriteString("\n  -p, --passphrase <string>  " + helpDecryptPassphrase)
+	b.WriteString("\n\n  example: shhh read -l [link] -p [passphrase]\n\n")
+	return b.String()
 }
 
 func usage() {
-	h := "Create or read secrets from a Shhh server."
-	h += "\n\nFind more information at https://github.com/smallwat3r/shhh-cli/blob/master/README.md"
+	var b strings.Builder
+	b.WriteString("Create or read secrets from a Shhh server.")
+	b.WriteString("\n\nFind more information at https://github.com/smallwat3r/shhh-cli/blob/master/README.md")
+	b.WriteString("\n\nUsage:")
+	b.WriteString("\n  shhh [mode] [options]")
+	b.WriteString("\n\nOptions:")
+	b.WriteString("\n  -h, --help     Show help message and exit.")
+	b.WriteString("\n  -v, --version  Show program version and exit.")
+	b.WriteString("\n\nModes:")
+	b.WriteString("\n  create         Creates a secret message.")
+	b.WriteString("\n  read           Read a secret message.\n\n")
+	b.WriteString(usageCreate() + "\n")
+	b.WriteString(usageRead())
+	fmt.Println(b.String())
+}
 
-	h += "\n\nUsage:"
-	h += "\n  shhh [mode] [options]"
+type createRequest struct {
+	Secret     string `json:"secret"`
+	Passphrase string `json:"passphrase"`
+	Expire     string `json:"expire"`
+	Tries      int    `json:"tries"`
+}
 
-	h += "\n\nOptions:"
-	h += "\n  -h, --help     Show help message and exit."
-	h += "\n  -v, --version  Show program version and exit."
+type createAPIResponse struct {
+	Response struct {
+		Status    string `json:"status"`
+		Details   string `json:"details,omitempty"`
+		Link      string `json:"link,omitempty"`
+		ExpiresOn string `json:"expires_on,omitempty"`
+	} `json:"response"`
+}
 
-	h += "\n\nModes:"
-	h += "\n  create         Creates a secret message."
-	h += "\n  read           Read a secret message.\n\n"
+type readAPIResponse struct {
+	Response struct {
+		Status  string `json:"status"`
+		Msg     string `json:"msg,omitempty"`
+		Details string `json:"details,omitempty"`
+	} `json:"response"`
+}
 
-	h += usageCreate() + "\n"
-	h += usageRead()
-
-	fmt.Println(h)
+var httpClient = &http.Client{
+	Timeout: 12 * time.Second,
+	Transport: &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		DialContext: (&net.Dialer{
+			Timeout:   8 * time.Second,
+			KeepAlive: 30 * time.Second,
+		}).DialContext,
+		ForceAttemptHTTP2:     true,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   8 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+	},
 }
 
 func main() {
 	createCmd := flag.NewFlagSet("create", flag.ExitOnError)
-	createCmd.Usage = func() {
-		h := usageCreate()
-		fmt.Println(h)
-		os.Exit(0)
-	}
+	createCmd.Usage = func() { fmt.Println(usageCreate()); os.Exit(0) }
 
 	var secret string
 	createCmd.StringVar(&secret, "m", "", helpSecret)
@@ -133,23 +141,15 @@ func main() {
 	createCmd.StringVar(&expire, "expire", "3d", helpExpire)
 
 	var tries int
-	createCmd.IntVar(&tries, "t", 3, helpTries)
-	createCmd.IntVar(&tries, "tries", 3, helpTries)
-
-	var haveibeenpwned bool
-	createCmd.BoolVar(&haveibeenpwned, "s", false, helpHaveibeenpwned)
-	createCmd.BoolVar(&haveibeenpwned, "secure", false, helpHaveibeenpwned)
+	createCmd.IntVar(&tries, "t", 5, helpTries)
+	createCmd.IntVar(&tries, "tries", 5, helpTries)
 
 	var server string
-	createCmd.StringVar(&server, "h", "", helpServer)
+	createCmd.StringVar(&server, "H", "", helpServer)
 	createCmd.StringVar(&server, "host", "", helpServer)
 
 	readCmd := flag.NewFlagSet("read", flag.ExitOnError)
-	readCmd.Usage = func() {
-		h := usageRead()
-		fmt.Println(h)
-		os.Exit(0)
-	}
+	readCmd.Usage = func() { fmt.Println(usageRead()); os.Exit(0) }
 
 	var link string
 	readCmd.StringVar(&link, "l", "", helpLink)
@@ -159,6 +159,7 @@ func main() {
 	readCmd.StringVar(&decryptPassphrase, "p", "", helpDecryptPassphrase)
 	readCmd.StringVar(&decryptPassphrase, "passphrase", "", helpDecryptPassphrase)
 
+	// no args: show version + usage
 	if len(os.Args) == 1 {
 		version()
 		usage()
@@ -174,217 +175,241 @@ func main() {
 		version()
 		os.Exit(0)
 	case "create":
-		createCmd.Parse(os.Args[2:])
+		_ = createCmd.Parse(os.Args[2:])
 	case "read":
-		readCmd.Parse(os.Args[2:])
+		_ = readCmd.Parse(os.Args[2:])
 	default:
-		fmt.Fprintf(os.Stderr, "%q is not valid command\n\n", os.Args[1])
+		fmt.Fprintf(os.Stderr, "%q is not a valid command\n\n", os.Args[1])
 		os.Exit(127)
 	}
 
 	if createCmd.Parsed() {
-		if secret == "" {
-			fmt.Fprintf(
-				os.Stderr,
-				"Supply a message to encrypt using --message\n\n",
-			)
-			os.Exit(1)
+		if err := runCreate(secret, encryptPassphrase, expire, tries, server); err != nil {
+			fail(err)
 		}
-		if encryptPassphrase == "" {
-			fmt.Fprintf(
-				os.Stderr,
-				"Supply a passphrase using --passphrase\n\n",
-			)
-			os.Exit(1)
-		}
-		createSecret(
-			secret,
-			encryptPassphrase,
-			expire,
-			tries,
-			haveibeenpwned,
-			server,
-		)
 	}
 
 	if readCmd.Parsed() {
-		if link == "" {
-			fmt.Fprintf(os.Stderr, "Supply a link using --link\n\n")
-			os.Exit(1)
+		if err := runRead(link, decryptPassphrase); err != nil {
+			fail(err)
 		}
-		if decryptPassphrase == "" {
-			fmt.Fprintf(
-				os.Stderr,
-				"Supply a passphrase using --passphrase\n\n",
-			)
-			os.Exit(1)
-		}
-		readSecret(link, decryptPassphrase)
 	}
 }
 
-func createSecret(
-	secret string,
-	passphrase string,
-	expire string,
-	tries int,
-	haveibeenpwned bool,
-	server string,
-) {
-	target := getTargetServer(server)
-
-	payload := map[string]interface{}{
-		"secret":         secret,
-		"passphrase":     passphrase,
-		"expire":         expire,
-		"tries":          tries,
-		"haveibeenpwned": haveibeenpwned,
+func runCreate(secret, passphrase, expire string, tries int, server string) error {
+	if secret == "" {
+		return errors.New("supply a message using --message")
 	}
-	bytesRepr, err := json.Marshal(payload)
+	if passphrase == "" {
+		return errors.New("supply a passphrase using --passphrase")
+	}
+	if err := validateExpire(expire); err != nil {
+		return err
+	}
+	if err := validateTries(tries); err != nil {
+		return err
+	}
+
+	target, err := getTargetServer(server)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
-	resp, err := http.Post(target, "application/json", bytes.NewBuffer(bytesRepr))
+	reqBody := createRequest{
+		Secret:     secret,
+		Passphrase: passphrase,
+		Expire:     expire,
+		Tries:      tries,
+	}
+	buf, err := json.Marshal(reqBody)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
-	expected := map[int]bool{200: true, 201: true, 422: true}
-	if !expected[resp.StatusCode] {
-		fmt.Fprintf(
-			os.Stderr,
-			"Failed to reach server: returned %d on %s\n\n",
-			resp.StatusCode,
-			target,
-		)
-		os.Exit(1)
+	req, err := http.NewRequest(http.MethodPost, target, bytes.NewBuffer(buf))
+	if err != nil {
+		return err
 	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("User-Agent", "shhh-cli/"+shhhCLIVersion)
 
-	var response map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&response)
-	result, ok := response["response"].(map[string]interface{})
-	if !ok {
-		fmt.Fprintf(os.Stderr, "Couldn't read response from server\n\n")
-		os.Exit(1)
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return err
 	}
+	defer resp.Body.Close()
 
-	switch result["status"] {
-	case "error":
-		color.Red("%s\n\n", result["details"].(string))
-		os.Exit(1)
-	case "created":
-		color.Green(separator(79))
-		color.Green("Secret link         : %s", result["link"].(string))
-		color.Green("One time passphrase : %s", passphrase)
-		color.Green("Expires on          : %s", result["expires_on"].(string))
-		color.Green("%s\n\n", separator(79))
-		os.Exit(0)
+	switch resp.StatusCode {
+	case http.StatusOK, http.StatusCreated, http.StatusUnprocessableEntity:
+		// proceed
 	default:
-		fmt.Fprintf(os.Stderr, "Couldn't read response from server\n\n")
-		os.Exit(1)
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 2048))
+		return fmt.Errorf("failed to reach server: returned %d on %s\n%s", resp.StatusCode, target, strings.TrimSpace(string(body)))
+	}
+
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("couldn't read server response: %w", err)
+	}
+
+	var apiResp createAPIResponse
+	if err := json.Unmarshal(bodyBytes, &apiResp); err != nil {
+		return fmt.Errorf("couldn't decode server response: %w\nBody: %s", err, strings.TrimSpace(string(bodyBytes)))
+	}
+
+	switch apiResp.Response.Status {
+	case "error":
+		msg := strings.TrimSpace(apiResp.Response.Details)
+		if msg == "" {
+			msg = "An unexpected error occurred while creating the secret."
+		}
+		fmt.Fprintf(os.Stderr, "%s\n\n", msg)
+		return exitCode(1)
+	case "created":
+		printBanner()
+		color.Green("Secret link         : %s", apiResp.Response.Link)
+		color.Green("One time passphrase : %s", passphrase)
+		color.Green("Expires on          : %s", apiResp.Response.ExpiresOn)
+		printBanner()
+		return nil
+	default:
+		return errors.New("couldn't read response from server")
 	}
 }
 
-func readSecret(link string, passphrase string) {
-	if !isUrl(link) {
-		fmt.Fprintf(os.Stderr, "Shhh server link URL invalid: %s\n\n", link)
-		os.Exit(1)
+func runRead(link string, passphrase string) error {
+	if link == "" {
+		return errors.New("supply a link using --link")
+	}
+	if passphrase == "" {
+		return errors.New("supply a passphrase using --passphrase")
+	}
+	if !isURL(link) {
+		return fmt.Errorf("Shhh server link URL invalid: %s", link)
 	}
 
 	l, err := url.Parse(link)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 	host := l.Scheme + "://" + l.Host
+	slug := path.Base(l.Path)
 
-	p := l.Path
-	slug := path.Base(p)
-
-	apiUrl := host + "/api/secret"
-	u, err := url.Parse(apiUrl)
+	u, err := url.Parse(host + "/api/secret")
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
-
-	q, err := url.ParseQuery(u.RawQuery)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	q.Add("slug", slug)
-	q.Add("passphrase", passphrase)
-
+	q := u.Query()
+	q.Set("external_id", slug)
+	q.Set("passphrase", passphrase)
 	u.RawQuery = q.Encode()
-	readUrl := u.String()
-	resp, err := http.Get(readUrl)
+
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("User-Agent", "shhh-cli/"+shhhCLIVersion)
 
-	expected := map[int]bool{200: true, 401: true, 404: true, 422: true}
-	if !expected[resp.StatusCode] {
-		fmt.Fprintf(
-			os.Stderr,
-			"Failed to reach server: returned %d on %s\n\n",
-			resp.StatusCode,
-			link,
-		)
-		os.Exit(1)
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return err
 	}
+	defer resp.Body.Close()
 
-	var response map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&response)
-	result, ok := response["response"].(map[string]interface{})
-	if !ok {
-		fmt.Fprintf(os.Stderr, "Couldn't read response from server\n\n")
-		os.Exit(1)
-	}
-
-	switch result["status"] {
-	case "error", "expired", "invalid":
-		color.Red("%s\n\n", result["msg"].(string))
-		os.Exit(1)
-	case "success":
-		color.Green(separator(79))
-		color.Green(result["msg"].(string))
-		color.Green("%s\n\n", separator(79))
-		os.Exit(0)
+	switch resp.StatusCode {
+	case http.StatusOK, http.StatusUnauthorized, http.StatusNotFound, http.StatusUnprocessableEntity:
+		// proceed
 	default:
-		fmt.Fprintf(os.Stderr, "Couldn't read response from server\n\n")
-		os.Exit(1)
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 2048))
+		return fmt.Errorf("failed to reach server: returned %d on %s\n%s", resp.StatusCode, link, strings.TrimSpace(string(body)))
+	}
+
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("couldn't read server response: %w", err)
+	}
+
+	var apiResp readAPIResponse
+	if err := json.Unmarshal(bodyBytes, &apiResp); err != nil {
+		return fmt.Errorf("couldn't decode server response: %w\nBody: %s", err, strings.TrimSpace(string(bodyBytes)))
+	}
+
+	status := strings.ToLower(strings.TrimSpace(apiResp.Response.Status))
+	msg := strings.TrimSpace(apiResp.Response.Msg)
+
+	switch status {
+	case "success":
+		printBanner()
+		color.Green(msg)
+		printBanner()
+		return nil
+	default:
+		if msg == "" {
+			msg = strings.TrimSpace(apiResp.Response.Details)
+		}
+		color.Red("%s\n", msg)
+		return exitCode(1)
 	}
 }
 
-func separator(length int) string {
-	sep := ""
-	for i := 0; i < length; i++ {
-		sep += "-"
-	}
-	return sep
+func printBanner() {
+	color.Green(strings.Repeat("-", 79))
 }
 
-func isUrl(str string) bool {
+func isURL(str string) bool {
 	u, err := url.Parse(str)
 	return err == nil && u.Scheme != "" && u.Host != ""
 }
 
-// Get endpoint for the targeted server
-func getTargetServer(server string) string {
-	target := os.Getenv("SHHH_SERVER")
-	if !(server == "") {
-		target = server
+func validateExpire(exp string) error {
+	allowed := map[string]struct{}{
+		"10m": {}, "30m": {}, "1h": {}, "3h": {}, "6h": {},
+		"1d": {}, "2d": {}, "3d": {}, "5d": {}, "7d": {},
 	}
-	// Default Shhh server target if none specified nor in env or params
+	if _, ok := allowed[exp]; !ok {
+		return fmt.Errorf("invalid expire value %q; allowed: 10m, 30m, 1h, 3h, 6h, 1d, 2d, 3d, 5d, 7d", exp)
+	}
+	return nil
+}
+
+func validateTries(t int) error {
+	switch t {
+	case 3, 5, 7:
+		return nil
+	default:
+		return fmt.Errorf("invalid tries value %d; allowed: 3, 5, 7", t)
+	}
+}
+
+func getTargetServer(serverFlag string) (string, error) {
+	target := strings.TrimSpace(os.Getenv("SHHH_SERVER"))
+	if serverFlag != "" {
+		target = strings.TrimSpace(serverFlag)
+	}
 	if target == "" {
-		return "https://www.shhh-encrypt/api/secret"
+		target = "https://shhh.smallwat3r.com"
 	}
-	if !isUrl(target) {
-		fmt.Fprintf(
-			os.Stderr,
-			"Shhh server target URL invalid: %s\n\n",
-			target,
-		)
-		os.Exit(1)
+	if !isURL(target) {
+		return "", fmt.Errorf("Shhh server target URL invalid: %s", target)
 	}
-	return target + "/api/secret"
+	// avoid double-appending
+	if strings.HasSuffix(target, "/api/secret") {
+		return target, nil
+	}
+	return strings.TrimRight(target, "/") + "/api/secret", nil
+}
+
+type exitCode int
+
+func (e exitCode) Error() string { return fmt.Sprintf("exit code %d", int(e)) }
+
+func fail(err error) {
+	fmt.Fprintln(os.Stderr, err.Error())
+	var ec exitCode
+	if errors.As(err, &ec) {
+		os.Exit(int(ec))
+	}
+	os.Exit(1)
 }
