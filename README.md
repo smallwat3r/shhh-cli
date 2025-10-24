@@ -8,16 +8,15 @@ create and read secrets using Shhh directly from the terminal.
 ## How to install it?  
 
 #### If you're a GO user  
+
 ```sh
-GO111MODULE=auto go get -u github.com/smallwat3r/shhh-cli \
-    && mv $GOPATH/bin/shhh-cli $GOPATH/bin/shhh
+go install github.com/smallwat3r/shhh-cli@latest && mv $GOPATH/bin/shhh-cli $GOPATH/bin/shhh
 ```
 
 #### Using Homebrew  
 
 ```sh
-brew tap smallwat3r/scripts \
-  && brew install shhh
+brew tap smallwat3r/scripts && brew install shhh
 ```
 
 #### Manually  
